@@ -339,26 +339,3 @@ The logo is created from [this
 portrait](https://commons.wikimedia.org/wiki/File:Ada_Lovelace_portrait.jpg)
 of [Ada Lovelace](https://de.wikipedia.org/wiki/Ada_Lovelace), a very
 early pioneer in Computer Science.
-
-[
-Twitter](https://twitter.com/share?text=adaR%3a%20An%20accurate%2c%20fast%20and%20WHATWG-compliant%20URL%20parser&url=http%3a%2f%2fblog.schochastics.net%2fpost%2fadar-an-accurate-fast-and-whatwg-compliant-url-parser%2f)
-[
-Facebook](https://www.facebook.com/sharer/sharer.php?u=http%3a%2f%2fblog.schochastics.net%2fpost%2fadar-an-accurate-fast-and-whatwg-compliant-url-parser%2f)
-[
-Google+](https://plus.google.com/share?url=http%3a%2f%2fblog.schochastics.net%2fpost%2fadar-an-accurate-fast-and-whatwg-compliant-url-parser%2f)
-[
-LinkedIn](https://www.linkedin.com/shareArticle?mini=true&title=adaR%3a%20An%20accurate%2c%20fast%20and%20WHATWG-compliant%20URL%20parser&url=http%3a%2f%2fblog.schochastics.net%2fpost%2fadar-an-accurate-fast-and-whatwg-compliant-url-parser%2f&summary=)
-
-Please enable JavaScript to view the [comments powered by
-Disqus.](https://disqus.com/?ref_noscript)
-
-# [schochastics](http://blog.schochastics.net/ "schochastics")
-
-[](#)
-
-© 2023 / Powered by [Hugo](https://gohugo.io/)
-
-[Ghostwriter theme](https://github.com/roryg/ghostwriter) By
-[JollyGoodThemes](http://jollygoodthemes.com/) /
-[Ported](https://github.com/jbub/ghostwriter) to Hugo By
-[jbub](https://github.com/jbub)

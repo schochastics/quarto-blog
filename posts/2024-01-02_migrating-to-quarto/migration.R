@@ -1,5 +1,3 @@
-# pandoc blog2.html --lua-filter remove-tags.lua  -t gfm-raw_html -o output1.md
-#  sed -i '/^Tagged/,$d' output1.md
 library(rvest)
 library(tidyverse)
 
