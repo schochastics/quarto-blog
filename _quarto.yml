@@ -18,8 +18,10 @@ website:
     right:
       - icon: rss
         href: http://blog.schochastics.net/index.xml
-      - icon: house-fill
+      - text: personal page
         href: https://mr.schochastics.net
+      - text: blog archive
+        href: http://archive.schochastics.net
   page-footer:
     center:
       - href: https://blog.schochastics.net
