@@ -50,6 +50,9 @@ for (i in seq_len(nrow(posts))) {
         html_node(".post-title") |> html_text(), error = function(e) "")
 }
 
+write_csv(posts, "posts/2024-01-02_migrating-to-quarto/posts.csv")
+# manually add categories
+posts <- read_csv("posts/2024-01-02_migrating-to-quarto/posts.csv")
 
 # convert html to md and clean up
 wd <- here::here()
@@ -59,7 +62,7 @@ for (i in seq_len(nrow(posts))) {
     system("pandoc post.html --lua-filter ../2024-01-02_migrating-to-quarto/remove-tags.lua  -t gfm-raw_html -o index.md")
     system("sed -i '/^Tagged/,$d' index.md")
     system("sed -i '1,10d' index.md")
-    system("sed -i '2,6d' index.md")
+    system("sed -i '1,6d' index.md")
     setwd(wd)
 }
 
@@ -79,8 +82,7 @@ for (i in seq_len(nrow(posts))[-31]) {
         yaml::as.yaml() |>
         paste0("title: \"", posts$post_title[i], "\"\n", ... = _) |>
         paste0(... = _, "date: ", posts$pub_date[i], "\n") |>
-        paste0(... = _, "categories: []\n") |>
-        paste0(... = _, "aliases: [\"", str_replace(posts$old_link[i], "blog.", "archive."), "\"]\n") |>
+        paste0(... = _, "categories: [", posts$category[i], "]\n") |>
         paste0("---\n", ... = _, "---\n") |>
         str_replace("name:", "- name:") |>
         str_replace("orcid:", "  orcid:") |>

@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2023-11-16
-categories: []
-aliases: ["http://archive.schochastics.net/post/efficient-row-min-calculation-from-r-to-c/"]
+categories: [R, C]
 ---
 
-# Efficient row min calculation: From R to C
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/efficient-row-min-calculation-from-r-to-c/).*
-
 
 My colleague [Chung-hong Chan](https://github.com/chainsawriot) started
 a [new package](https://github.com/gesistsa/quanteda.proximity) in our

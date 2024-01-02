@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2023-06-28
-categories: []
-aliases: ["http://archive.schochastics.net/post/fast-creation-of-lfr-benchmark-graphs-in-r/"]
+categories: [R, networks]
 ---
 
-# Fast creation of LFR Benchmark graphs in R
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/fast-creation-of-lfr-benchmark-graphs-in-r/).*
-
 
 [Almost a year
 ago](http://blog.schochastics.net/post/extending-network-analysis-in-r-with-netutils/),

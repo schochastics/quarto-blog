@@ -1,17 +1,15 @@
 ---
-title: "An Rstudio Addin for Network Analysis and Visualization "
+title: "An Rstudio Addin for Network Analysis and Visualization"
 author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2019-01-26
-categories: []
-aliases: ["http://archive.schochastics.net/post/an-rstudio-addin-for-network-analysis-and-visualization/"]
+categories: [R, Rstudio addin, networks]
 ---
 
-# An Rstudio Addin for Network Analysis and Visualization
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/an-rstudio-addin-for-network-analysis-and-visualization/).*
-
 
 **The package `smglr` was renamed to `graphlayouts`**
 

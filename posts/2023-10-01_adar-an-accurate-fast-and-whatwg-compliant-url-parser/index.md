@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2023-10-01
-categories: []
-aliases: ["http://archive.schochastics.net/post/adar-an-accurate-fast-and-whatwg-compliant-url-parser/"]
+categories: [R, package]
 ---
 
-# adaR: An accurate, fast and WHATWG-compliant URL parser
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/adar-an-accurate-fast-and-whatwg-compliant-url-parser/).*
-
 
 The other week, I found an interesting looking library on GitHub.
 [ada-url](https://github.com/ada-url/ada), a

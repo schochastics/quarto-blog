@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2023-07-17
-categories: []
-aliases: ["http://archive.schochastics.net/post/create-a-cv-with-quarto/"]
+categories: [R, quarto]
 ---
 
-# Create a CV with Quarto
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/create-a-cv-with-quarto/).*
-
 
 In this post, I will introduce a few extensions for
 [Quarto](https://quarto.org/) to create nicely looking CVs. Disclaimer:

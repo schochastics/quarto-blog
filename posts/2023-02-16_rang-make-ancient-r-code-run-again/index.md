@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2023-02-16
-categories: []
-aliases: ["http://archive.schochastics.net/post/rang-make-ancient-r-code-run-again/"]
+categories: [R, package, reproducibility]
 ---
 
-# rang: make ancient R code run again
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/rang-make-ancient-r-code-run-again/).*
-
 
 Reproducibility is a [big
 issue](https://www.nature.com/articles/s41597-022-01143-6) in the

@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2018-09-28
-categories: []
-aliases: ["http://archive.schochastics.net/post/six-degrees-of-zlatan-ibrahimovic/"]
+categories: [R, data analysis, sports]
 ---
 
-# Six Degrees of Zlatan Ibrahimovic
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/six-degrees-of-zlatan-ibrahimovic/).*
-
 
 ![](zlatan-ibrahimovic_3479220k_trans_NvBQzQNjv4BqqVzuuqpFlyLIw.webp)
 

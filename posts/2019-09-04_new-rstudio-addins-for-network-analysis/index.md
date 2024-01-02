@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2019-09-04
-categories: []
-aliases: ["http://archive.schochastics.net/post/new-rstudio-addins-for-network-analysis/"]
+categories: [R, Rstudio addin, networks]
 ---
 
-# New RStudio addins for network analysis
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/new-rstudio-addins-for-network-analysis/).*
-
 
 A new version of the
 [snahelper](https://cran.r-project.org/web/packages/snahelper/index.html)

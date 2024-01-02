@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2019-12-15
-categories: []
-aliases: ["http://archive.schochastics.net/post/a-large-repository-of-networkdata/"]
+categories: [R, package, networks]
 ---
 
-# A large repository of networkdata
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/a-large-repository-of-networkdata/).*
-
 
 There are many network repositories out there that offer a large variety
 of amazing free data. (See the [awesome network analysis

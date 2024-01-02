@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2017-11-24
-categories: []
-aliases: ["http://archive.schochastics.net/post/predicting-player-positions/"]
+categories: [R, data analysis, sports]
 ---
 
-# Predicting Player Positions of FIFA 18 Players
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/predicting-player-positions/).*
-
 
 In this post, I will use the results of the exploratory analysis from
 the [previous

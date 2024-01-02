@@ -4,15 +4,13 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2018-09-13
-categories: []
-aliases: ["http://archive.schochastics.net/post/stress-based-graph-layouts/"]
+categories: [R, networks, visualization]
 ---
 
-# Stress based graph layouts
+**The package `smglr` was renamed to `graphlayouts`**
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/stress-based-graph-layouts/).*
 
-**The package `smglr` was renamed to `graphlayouts`**
 
 I academically grew up among graph drawers, that is, computer scientists
 and mathematicians interested in deriving two-dimensional depictions of

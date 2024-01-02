@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2019-04-14
-categories: []
-aliases: ["http://archive.schochastics.net/post/introducing-graphlayouts-with-got/"]
+categories: [R, networks, visualization]
 ---
 
-# Introducing graphlayouts with Game of Thrones
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/introducing-graphlayouts-with-got/).*
-
 
 **The post has been updated because the API has changed since the
 release of this post. Checkout the new API in the [release

@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2018-10-07
-categories: []
-aliases: ["http://archive.schochastics.net/post/analyzing-the-greatest-strikers-in-football-ii-visualizing-data/"]
+categories: [R, data analysis, sports]
 ---
 
-# Analyzing the Greatest Strikers in Football II: Visualizing Data
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/analyzing-the-greatest-strikers-in-football-ii-visualizing-data/).*
-
 
 This is the second part of *Analyzing the Greatest Strikers in
 Football*. In the [first

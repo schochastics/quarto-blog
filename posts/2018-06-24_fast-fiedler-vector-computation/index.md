@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2018-06-24
-categories: []
-aliases: ["http://archive.schochastics.net/post/fast-fiedler-vector-computation/"]
+categories: [R, networks]
 ---
 
-# Fast Fiedler Vector Computation
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/fast-fiedler-vector-computation/).*
-
 
 This is a short post on how to quickly calculate the [Fiedler
 vector](http://mathworld.wolfram.com/FiedlerVector.html) for large

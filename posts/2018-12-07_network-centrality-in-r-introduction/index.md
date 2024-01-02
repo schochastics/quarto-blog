@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2018-12-07
-categories: []
-aliases: ["http://archive.schochastics.net/post/network-centrality-in-r-introduction/"]
+categories: [R, networks]
 ---
 
-# Network Centrality in R: An Introduction
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/network-centrality-in-r-introduction/).*
-
 
 This is the first post of a series on the concept of “network
 centrality” with applications in R and the package `netrankr`. There is

@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2019-08-25
-categories: []
-aliases: ["http://archive.schochastics.net/post/graphlouts-v0-5-0/"]
+categories: [R, package, networks, visualization]
 ---
 
-# graphlayouts v0.5.0 released
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/graphlouts-v0-5-0/).*
-
 
 A new version of
 [graphlayouts](https://cran.r-project.org/web/packages/graphlayouts/index.html)

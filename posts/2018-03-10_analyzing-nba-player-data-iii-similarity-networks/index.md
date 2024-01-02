@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2018-03-10
-categories: []
-aliases: ["http://archive.schochastics.net/post/analyzing-nba-player-data-iii-similarity-networks/"]
+categories: [R, data analysis, sports]
 ---
 
-# Analyzing NBA Player Data III: Similarity Networks
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/analyzing-nba-player-data-iii-similarity-networks/).*
-
 
 This is the last part of the mini series *Analysing NBA Player data*.
 The [first

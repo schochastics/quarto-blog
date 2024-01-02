@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2018-12-12
-categories: []
-aliases: ["http://archive.schochastics.net/post/network-centrality-in-r-new-ways-of-measuring-centrality/"]
+categories: [R, networks]
 ---
 
-# Network Centrality in R: New ways of measuring Centrality
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/network-centrality-in-r-new-ways-of-measuring-centrality/).*
-
 
 This is the third post of a series on the concept of “network
 centrality” with applications in R and the package `netrankr`. The last

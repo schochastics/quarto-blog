@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2020-01-25
-categories: []
-aliases: ["http://archive.schochastics.net/post/a-package-for-analysing-signed-networks/"]
+categories: [R, package, networks, visualization]
 ---
 
-# A package for analysing signed networks
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/a-package-for-analysing-signed-networks/).*
-
 
 This post introduces the R package `signnet`, available on
 [CRAN](https://cran.r-project.org/package=signnet), which implements

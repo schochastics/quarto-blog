@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2022-08-27
-categories: []
-aliases: ["http://archive.schochastics.net/post/extending-network-analysis-in-r-with-netutils/"]
+categories: [R, package, networks]
 ---
 
-# Extending network analysis in R with netUtils
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/extending-network-analysis-in-r-with-netutils/).*
-
 
 ![](netUtils.png)
 

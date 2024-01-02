@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2021-09-15
-categories: []
-aliases: ["http://archive.schochastics.net/post/animating-network-evolutions-with-gganimate/"]
+categories: [R, networks, visualization]
 ---
 
-# Animating Network Evolutions with gganimate
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/animating-network-evolutions-with-gganimate/).*
-
 
 People regularly ask me if it is possible to animate a network evolution
 with {{ggraph}} and {{gganimate}}. Unfortunately this is not yet

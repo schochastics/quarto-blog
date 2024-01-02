@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2019-06-29
-categories: []
-aliases: ["http://archive.schochastics.net/post/mapping-nba-shot-locations/"]
+categories: [R, data analysis, sports]
 ---
 
-# Mapping NBA Shot Locations
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/mapping-nba-shot-locations/).*
-
 
 I recently came across the article [“How Mapping Shots In The NBA
 Changed It

@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2017-12-17
-categories: []
-aliases: ["http://archive.schochastics.net/post/a-wild-r-package-appears/"]
+categories: [R, package, visualization]
 ---
 
-# A wild R package appears! Pokemon/Gameboy inspired plots in R
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/a-wild-r-package-appears/).*
-
 
 I have to comute quite long every day and I always try to keep occupied
 with little projects. One of my first projects was to increase my

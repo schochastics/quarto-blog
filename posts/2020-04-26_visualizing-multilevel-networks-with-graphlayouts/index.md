@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2020-04-26
-categories: []
-aliases: ["http://archive.schochastics.net/post/visualizing-multilevel-networks-with-graphlayouts/"]
+categories: [R, networks, visualization]
 ---
 
-# Visualizing Multilevel Networks with graphlayouts
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/visualizing-multilevel-networks-with-graphlayouts/).*
-
 
 This post introduces `layout_as_multilevel()`, a new function in the
 {{graphlayouts}} package. As the name suggests, this function can be use

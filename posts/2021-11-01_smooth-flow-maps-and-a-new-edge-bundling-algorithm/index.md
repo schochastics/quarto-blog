@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2021-11-01
-categories: []
-aliases: ["http://archive.schochastics.net/post/smooth-flow-maps-and-a-new-edge-bundling-algorithm/"]
+categories: [R, package, networks, visualization]
 ---
 
-# Smooth flow maps and a new edge bundling algorithm
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/smooth-flow-maps-and-a-new-edge-bundling-algorithm/).*
-
 
 This post introduces new features of `edgebundle`, an R package that
 implements several edge bundling/flow and metro map algorithms.

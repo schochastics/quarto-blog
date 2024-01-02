@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2023-03-22
-categories: []
-aliases: ["http://archive.schochastics.net/post/a-suite-of-tools-to-scrape-and-parse-search-engine-results/"]
+categories: [R, package]
 ---
 
-# A suite of tools to scrape and parse search engine results
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/a-suite-of-tools-to-scrape-and-parse-search-engine-results/).*
-
 
 My posts are usually R only. But in this post, I want to talk about a
 suite of tools developed by [my

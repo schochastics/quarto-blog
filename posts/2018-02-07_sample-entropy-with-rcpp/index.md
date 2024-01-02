@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2018-02-07
-categories: []
-aliases: ["http://archive.schochastics.net/post/sample-entropy-with-rcpp/"]
+categories: [R]
 ---
 
-# Sample Entropy with Rcpp
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/sample-entropy-with-rcpp/).*
-
 
 Entropy. I still shiver when I hear that word, since I never fully
 understood that concept. Today marks the first time I was kind of forced

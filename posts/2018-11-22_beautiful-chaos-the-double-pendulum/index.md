@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2018-11-22
-categories: []
-aliases: ["http://archive.schochastics.net/post/beautiful-chaos-the-double-pendulum/"]
+categories: [R, simulation]
 ---
 
-# Beautiful Chaos: The Double Pendulum
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/beautiful-chaos-the-double-pendulum/).*
-
 
 This post is dedicated to the beautiful chaos created by double
 pendulums. I have seen a great variety of animated versions, implemented

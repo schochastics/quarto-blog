@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2018-01-19
-categories: []
-aliases: ["http://archive.schochastics.net/post/traveling-beerdrinker-problem/"]
+categories: [R, data analysis, visualization]
 ---
 
-# Traveling Beerdrinker Problem
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/traveling-beerdrinker-problem/).*
-
 
 Whenever I participate in a Science Slam, I try to work in an analysis
 of something typical for the respective city. My next gig will be in

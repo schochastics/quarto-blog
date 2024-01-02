@@ -1,1 +1,34 @@
 /* css styles */
+/* css styles */
+div.sourceCode {
+    background-color: black;
+}
+
+
+h1,
+h2,
+h3,
+h4 {
+    font-family: 'Nova Square';
+}
+
+.listing-title {
+    color: white;
+    text-decoration: underline;
+    font-weight: 700;
+}
+
+pre {
+    border: 1px solid white;
+    color: var(--navbar-fg);
+    padding: 5px 5px 5px 5px;
+}
+
+code {
+    color: var(--navbar-fg);
+}
+
+/* inline code */
+.post-body>p>code {
+    background-color: rgba(255, 255, 255, .1);
+}

@@ -4,15 +4,13 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2017-11-19
-categories: []
-aliases: ["http://archive.schochastics.net/post/dimensionality-reduction-methods/"]
+categories: [R, data analysis, sports]
 ---
 
-# Dimensionality Reduction Methods Using FIFA 18 Player Data
+In this post, I will introduce three different methods for
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/dimensionality-reduction-methods/).*
 
-In this post, I will introduce three different methods for
 [dimensionality
 reduction](https://en.wikipedia.org/wiki/Dimensionality_reduction) of
 large datasets.

@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2021-12-08
-categories: []
-aliases: ["http://archive.schochastics.net/post/sketchy-hand-drawn-like-maps-in-r/"]
+categories: [R, package, visualization]
 ---
 
-# Sketchy, Hand-drawn-like Maps in R
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/sketchy-hand-drawn-like-maps-in-r/).*
-
 
 ![](roughsf.png)
 

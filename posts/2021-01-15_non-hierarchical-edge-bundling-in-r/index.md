@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2021-01-15
-categories: []
-aliases: ["http://archive.schochastics.net/post/non-hierarchical-edge-bundling-in-r/"]
+categories: [R, package, networks, visualization]
 ---
 
-# Non-hierarchical edge bundling, flow maps and metro maps in R
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/non-hierarchical-edge-bundling-in-r/).*
-
 
 This post introduces the R package `edgebundle`, an R package that
 implements several edge bundling/flow and metro map algorithms.

@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2023-09-12
-categories: []
-aliases: ["http://archive.schochastics.net/post/preprocessing-and-analyzing-web-tracking-data-with-webtrackr/"]
+categories: [R, package]
 ---
 
-# Preprocessing and analyzing web tracking data with webtrackR
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/preprocessing-and-analyzing-web-tracking-data-with-webtrackr/).*
-
 
 Researchers have relied on free/easy access to APIs from social media
 platforms for a very long time. But in the recent past, many prominent

@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2023-12-18
-categories: []
-aliases: ["http://archive.schochastics.net/post/using-a-quarto-dashboard-for-github-wrapped/"]
+categories: [R, quarto, GitHub]
 ---
 
-# Using a Quarto Dashboard for GitHub Wrapped
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/using-a-quarto-dashboard-for-github-wrapped/).*
-
 
 [Dashboards](https://quarto.org/docs/dashboards/) are coming to Quarto
 in version 1.4. I already gave them a spin for a simple [parking

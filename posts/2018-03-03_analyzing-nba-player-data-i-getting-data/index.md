@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2018-03-03
-categories: []
-aliases: ["http://archive.schochastics.net/post/analyzing-nba-player-data-i-getting-data/"]
+categories: [R, data analysis, sports]
 ---
 
-# Analyzing NBA Player Data I: Getting Data
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/analyzing-nba-player-data-i-getting-data/).*
-
 
 As a football (soccer) data enthusiast, I have always been jealous of
 the amount of available data for American sports. While much of the

@@ -4,14 +4,12 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2020-10-16
-categories: []
-aliases: ["http://archive.schochastics.net/post/raspberry-pi-e-paper-dashboard-with-r/"]
+categories: [R, DIY]
 ---
 
-# Raspberry Pi E-Paper Dashboard with R
+
 
 *This post was semi automatically converted from blogdown to Quarto and may contain errors. The original can be found in the [archive](http://archive.schochastics.net/post/raspberry-pi-e-paper-dashboard-with-r/).*
-
 
 For once, this is not a post on an R package for network analysis or
 random R code.  
