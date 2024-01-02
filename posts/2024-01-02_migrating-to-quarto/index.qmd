@@ -1,0 +1,34 @@
+---
+title: "Welcome To My Blog"
+author: "David Schoch"
+date: "2024-01-02"
+categories: [news]
+---
+
+I migrated my personal webpage to quarto in july 2022. The only thing I did not do was my blog for two reasons. 1) Quarto was still very new and I had back then many of todays features where not available yet. I already needed to hack some things together for my personal page (which  are srill in place although quarto now has the features...). For my blog, I wanted to wait till quarto is more mature, also because 2) i feared that it will not be straight forward to migrate  all my blog entries from blogdown to quarto.
+
+Time went by and I kept thinking about the migration but 2) kept me away from it. Over time though, I realized (as apparently many others) how broken my hugo/blogdown/theme setup has become. Every update introduced new issues. Lately I barely managed to put a post together without some weird hotfixes in the background. So it was time to migrate. Or start over. 
+
+## decision
+
+Pondering about the migration, I reached a point where I considered starting over with my blog. Why go through the hassel of migrating all posts? Obviously I could just leave the blog as is to not break anyones bookmarks (if they even exist) and simply start a new quarto blog. This lazy solution seemed compelling for many other reasons. When I started this blog in 2017, I didnt know or care about "reproducibilty". So, many of my early posts cannot be rerun because the data is lost or hidden on some old harddrive. I also didnt bother storing the intermediate md files. So, without trying, I felt it is highly unlikely that I can migrate all posts to Quarto without considerable effort.
+
+But there was one thing I was willing to try, purely out of technical interest:
+Is it possible to convert the html posts back to a raw markdown file? That way, I would not need to to rerun all analysis and only render to html with my new Quarto theme (and probably some yaml patching). 
+
+## links
+
+https://hachyderm.io/@djnavarro/111655059799138922
+
+https://stackoverflow.com/questions/42070656/pandoc-html-to-markdown-remove-all-attributes
+
+https://superuser.com/questions/1261472/make-pandoc-ignore-css-style-class
+
+http://www.cantoni.org/2019/01/27/converting-html-markdown-using-pandoc
+
+https://www.andreashandel.com/posts/2022-10-01-hugo-to-quarto-migration/
+
+https://www.incidentalfindings.org/posts/2022-08-30_from-blogdown-to-quarto/
+
+https://pacha.dev/blog/2023/05/29/blogdown-to-quarto/index.html
+

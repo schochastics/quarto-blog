@@ -1,0 +1,20 @@
+project:
+  type: website
+
+website:
+  site-url: "http://blog.schochastics.net"
+  title: "blog from schochastics"
+  search: false
+  navbar:
+    right:
+      - icon: rss
+        href: http://blog.schochastics.net/index.xml
+      - icon: house-fill
+        href: https://mr.schochastics.net
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+
+
+
