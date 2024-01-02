@@ -2,18 +2,31 @@ project:
   type: website
 
 website:
-  site-url: "http://blog.schochastics.net"
-  title: "blog from schochastics"
+  title: "Notes from a data witch"
+  description: "A data science blog by Danielle Navarro"
+  site-url: http://blog.schochastics.net
+  repo-url: https://github.com/schochastics/quarto-blog
+  open-graph: true
   search: false
+  twitter-card:
+    creator: "@schochastics"
   navbar:
+    title: false
+    left:
+      - href: index.qmd
+        text: Home
     right:
       - icon: rss
         href: http://blog.schochastics.net/index.xml
       - icon: house-fill
         href: https://mr.schochastics.net
+  page-footer:
+    center:
+      - href: https://blog.schochastics.net
+        text: blog.schochastics.net
 format:
   html:
-    theme: cosmo
+    theme: custom.scss
     css: styles.css
 
 

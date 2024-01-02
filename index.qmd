@@ -1,12 +1,13 @@
 ---
-title: "quarto-blog"
+title: "All things R"
+subtitle: "A blog by David Schoch"
 listing:
   contents: posts
   feed: true
   sort: "date desc"
   type: table
   fields: [date, title]
-  page-size: 10
+  page-size: 100
   table-hover: true
   table-striped: true
   categories: true
