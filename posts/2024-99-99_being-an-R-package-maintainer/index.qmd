@@ -1,0 +1,87 @@
+---
+title: "Beeing an R package maintainer"
+author:
+  - name: David Schoch
+    orcid: 0000-0003-2952-4812
+date: 2024-01-02
+categories: [R, packages]
+---
+
+In this post, I want to reflect upon my journey as an R package developer. As a disclaimer up front, I have no formal training in software engineering and all my knowledge comes from trail and error and reading up on the topic. So don't take this blog post as serious advice for how to develop/maintain R packages (or any type of software tools), but rather as personal story of how I become a mediocre R package maintainer.
+
+## Creating your first R package
+
+Creating an R package is fun.  
+There are great resources on how to create R packages and a lot of packages that support by "automating the boring stuff". [devtools](https://devtools.r-lib.org/), [usethis](https://usethis.r-lib.org/) and [roxygen2](https://roxygen2.r-lib.org/) are absolute game changers in that regard and help to set up the package structure and supporting documentation. 
+
+I guess ["Writing R Extensions"](https://cran.r-project.org/doc/manuals/R-exts.html) from the R Core team is the most official and comprehensive manual for writing packages. I usually need to consult it for obscure issues or questions that I have. More accesible though is the book ["R Packages (2e)"](https://r-pkgs.org/) from Hadley Wickham and Jenny Bryan. It covers the most important topics for regular package development. But besides these official resources, the R community has produced a great variety of amazing material around package development. Many of these are summarized in a [list by Maëlle Salmon](https://rpkgdev-mechanics.netlify.app/resources/). 
+
+[MZES](https://www.mzes.uni-mannheim.de/socialsciencedatalab/article/r-package/)
+
+
+
+## Going public
+
+I started developing netrankr somewhen in 2016, but I did so "secretly" offline. Only in early 2017, I dared to go public by putting it on GitHub.
+
+![First commit to the netrankr repository in February 2017](first_commit.png)
+
+Why didn't I do that earlier? Well, first of all, I was not really using GitHub at that time.
+
+![My GitHub contributions in 2017](git_contrib2017.png)
+
+Second, as many academics, I was afraid of being judged for my bad programming skills. At that time, I had used R for 5 years, but only to get me through my PhD. Never had I shared any of my code with anyone. To date, "being judged for bad coding skills" is still one of the biggest reasons why academics do not want to share reproducible material of their research.[^1] While I do not consider this a valid excuse for not publishing code of academic studies anymore (reproducibility should outhweigh personal pride), I do see that this is a very different ballgame when it comes to packages. Writing an R packakge, you are suddenly something like a software engineer and your code is being srutinized much more than a random script on zenodo. But as Hadley Wickham/Jenny Bryan write in their book:
+
+> It doesn’t matter if your first version isn’t perfect as long as the next version is better.
+
+Developing an R package is an iterative process[^2] (see the section about package maintenance) and absolutely no package ever was perfect, finished, or even just properly usable in its first version.  
+
+The next mental barrier for me was getting netrankr on CRAN. It took me almost a year to submit it and I remember spending weeks to pollish the package before finding the courage to submit it. For me, the whole process pretty much felt like submitting my first paper to a journal. So much excitement but also sooo much anxiety. Until I finally received that magical email
+
+> Dear maintainer,  
+> thanks, package netrankr_0.2.0.tar.gz is on its way to CRAN.
+
+What an adrenaline rush that was. 
+
+
+Your first package **does not** need to go to CRAN but can comfortably live on [GitHub](https://happygitwithr.com/). Actually, there is no requirement at all to have any package hosted on CRAN. It might add a sense of "officialness" and trust to the package, but I personally found more value in submitting packages to the [Journal of Open Source Software](https://joss.theoj.org/). Maybe I was just lucky so far, but all review processes felt like reviewers spend a lot of time going through the code and making suggestions. That does not happen when submitting on CRAN. As an added benefit, you also get a citable resource and a +1 on your publication list. 
+
+More recently, there is also the possibility to add packages to the [r-universe](https://r-universe.dev/search/). I highly recommend add your GitHub account there, following [these steps](https://github.com/r-universe-org/help#how-to-setup-your-personal-universe). There is also more [help available](https://github.com/r-universe-org/help).
+
+If you eventually decide to submit your package to CRAN, there are some (seemingly random) things you need to be aware of. The GitHub account of [ThinkR](https://github.com/ThinkR-open/prepare-for-cran) has gathered these stepping stones and provides some guidance on how to avoid them. 
+
+Lastly, I want to say that being rejected from CRAN is not a big deal and happens to everyone. It is usually not much work to fix whatever caused the rejection.  
+
+## Collaborating with others
+
+## Maintaining packages
+
+> "Running a successful open source project is just Good Will Hunting in reverse, where you start out as a respected genius and end up being a janitor who gets into fights." 
+Byrne Hobart
+
+![](bus-rpkg.jpg)
+
+you may eventually start reading about "software development"
+
+- [Working in Public: The Making and Maintenance of Open Source Software](https://www.amazon.de/dp/0578675862?psc=1&ref=ppx_yo2ov_dt_b_product_details)
+
+- [A Philosophy of Software Design](https://www.amazon.de/dp/173210221X?psc=1&ref=ppx_yo2ov_dt_b_product_details)
+
+- [Pragmatic Programmer, The: Your journey to mastery](https://www.amazon.de/dp/0135957052?psc=1&ref=ppx_yo2ov_dt_b_product_details)
+
+- [uncurled](https://un.curl.dev/)
+
+## Reverse dependencies
+
+## Lessons learned
+
+- Develop openly
+- collaborate and contribute
+- DRY (create helper functions)
+- maintaining is boring
+- take tests serious (there is such a thing called test driven developing)
+- write tests for "solved" bugs
+
+[^1]: In my defence, my thesis was very theoretical and didn't include much data analysis.
+
+[^2]: ["Software is never done"](https://medium.com/aljorhythm/most-software-is-never-done-c6a9bcda12a7)
