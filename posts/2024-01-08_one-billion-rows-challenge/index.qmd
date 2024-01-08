@@ -1,0 +1,222 @@
+---
+title: "One billion row challenge using base R"
+author:
+  - name: David Schoch
+    orcid: 0000-0003-2952-4812
+date: 2024-01-08
+categories: [R]
+---
+
+One of my new years resolutions is to blog a bit more on the random shenanigans I do with R. This is one of those.
+
+The [One Billion Row challenge](https://www.morling.dev/blog/one-billion-row-challenge/) by Gunnar Morling is as follows:
+
+> write a Java program for retrieving temperature measurement values from a text file and calculating the min, mean, and max temperature per weather station. There’s just one caveat: the file has 1,000,000,000 rows!
+
+I didn't take long, also thanks to [Hacker News](https://news.ycombinator.com/item?id=38851337), that the challenge spread to other programming languages. The original repository contains a [show & tell](https://github.com/gunnarmorling/1brc/discussions/categories/show-and-tell) where other results can be discussed.
+
+Obviously it also spread to R and there is a [GitHub repository](https://github.com/alejandrohagan/1br) from Alejandro Hagan dedicated to the challenge. There were some [critical discussions](https://github.com/alejandrohagan/1br/issues/5) on the seemingly bad performance of `data.table` but that issue thread also evolved to a discussion on other solutions. 
+
+The obvious candidates for fast solutions with R are [`dplyr`](https://github.com/tidyverse/dplyr), [`data.table`](https://github.com/Rdatatable/data.table), [`collapse`](https://github.com/SebKrantz/collapse), and [`polars`](https://github.com/pola-rs/r-polars). From those, it appears that polars might solve the tasks the [fastest](https://github.com/alejandrohagan/1br/issues/5#issuecomment-1879737918).
+
+I was curious, how far one can get with base R. 
+
+## Creating the data
+
+The R repository contains a [script](https://github.com/alejandrohagan/1br/blob/main/generate_data.R) to generate benchmark data. For the purpose of this post, I created files with 1e6 and 1e8 rows. Unfortunately, my personal laptop cannot handle 1 billion rows without dying.
+
+## Reading the data
+
+All base R functions will profit from reading the station column as a factor instead of a usual string. How would have thought that `stringAsFactors = TRUE` can be useful.
+
+```{r}
+#| label: read_1e6
+D <- data.table::fread("measurements1e6.csv", stringsAsFactors = TRUE)
+D
+```
+
+## The obvious: aggregate and split/lapply
+
+The most obvious choice for me was to use `aggregate()`.
+
+```{r}
+#| label: aggregate
+sum_stats_vec <- function(x) c(min = min(x), max = max(x), mean = mean(x))
+aggregate(measurement ~ state, data = D, FUN = sum_stats_vec) |> head()
+```
+
+I was pretty sure that this might be the best solution.
+
+The other obvious solution is to split the data frame according to staty and then `lapply` the stats calculation on each list entry
+
+```{r}
+#| label: split
+split_lapply <- function(D) {
+    result <- lapply(split(D, D$state), function(x) {
+        stats <- sum_stats_vec(x$measurement)
+        data.frame(
+            state = unique(x$state),
+            min = stats[1],
+            max = stats[2],
+            mean = stats[3]
+        )
+    })
+    do.call("rbind", result)
+}
+split_lapply(D) |> head()
+```
+
+## The elegant: by
+
+I stumbled upon `by` when searching for alternatives. I think it is a quite elegant looking way of solving a group/summarize task with base R. Unfortunately it returns a list and not a data frame or matrix (I made that an implicit requirement).  
+
+In the help for `by` I stumbled upon a function I wasn't aware of yet: `array2DF`! 
+```{r}
+#| label: by
+array2DF(by(D$measurement, D$state, sum_stats_vec)) |> head()
+```
+
+Does exactly what is needed here. For the benchmarks, I will also include a version without the `array2DF` call, to check its overhead.
+
+## Another apply: tapply
+
+In the help for `by`, I also stumbled upon this sentence 
+
+> Function `by` is an object-oriented wrapper for `tapply` applied to data frames.
+
+So maybe we can construct a solution that uses tapply, but without any inbuilt overhead in `by`.
+
+```{r}
+#| label: tapply1
+do.call("rbind", tapply(D$measurement, D$state, sum_stats_vec)) |> head()
+```
+
+At this point, I was also curious if the `do.call("rbind",list)` can be sped up, so I constructed a second tapply solution.
+
+```{r}
+#| label: tapply2
+sapply(tapply(D$measurement, D$state, sum_stats_vec), rbind) |> head()
+```
+
+## The obscure: reduce
+
+I thought that this should be it, but the I remembered `reduce` exists.
+
+```{r}
+#| label: reduce
+
+reduce <- function(D) {
+    state_list <- split(D$measurement, D$state)
+    Reduce(function(x, y) {
+        res <- sum_stats_vec(state_list[[y]])
+        rbind(x, c(state = y, mean = res[1], min = res[2], max = res[3]))
+    }, names(state_list), init = NULL)
+}
+
+reduce(D) |> head()
+```
+
+technically, this is a bit wrong since it it converts the numerical values to characters. But I allow it for this experiment.
+
+## The unfair contender: Rfast
+
+Pondering about how this functions could be sped up in general, I remembered the package [`Rfast`](https://github.com/RfastOfficial/Rfast/) and managed to construct a solution using this package.
+
+```{r}
+#| label: Rfast
+
+Rfast <- function(D) {
+    lev_int <- as.numeric(D$state)
+    minmax <- Rfast::group(D$measurement, lev_int, method = "min.max")
+    data.frame(
+        state = levels(D$state),
+        mean = Rfast::group(D$measurement, lev_int, method = "mean"),
+        min = minmax[1, ],
+        max = minmax[2, ]
+    )
+}
+
+Rfast(D) |> head()
+```
+
+Pretty sure that this will be the fastest, maybe even competitive with the other big packages!
+
+## Benchmark
+
+To reorder the benchmark results from `microbenchmark`, we use a function provided by [Dirk Eddelbuettel](https://github.com/eddelbuettel/dang/blob/master/R/reorderMicrobenchmarkResults.R).
+```{r}
+#| label: bench_print
+reorderMicrobenchmarkResults <- function(res, order = "median") {
+    stopifnot("Argument 'res' must be a 'microbenchmark' result" = inherits(res, "microbenchmark"))
+
+    smry <- summary(res)
+    res$expr <- factor(res$expr,
+        levels = levels(res$expr)[order(smry[["median"]])],
+        ordered = TRUE
+    )
+    res
+}
+```
+
+
+```{r}
+#| label: bench-1e6
+#| cache: true
+sum_stats_list <- function(x) list(min = min(x), max = max(x), mean = mean(x))
+sum_stats_tibble <- function(x) tibble::tibble(min = min(x), max = max(x), mean = mean(x))
+
+bench1e6 <- microbenchmark::microbenchmark(
+    aggregate = aggregate(measurement ~ state, data = D, FUN = sum_stats_vec),
+    split_lapply = split_lapply(D),
+    array2DF_by = array2DF(by(D$measurement, D$state, sum_stats_vec)),
+    raw_by = by(D$measurement, D$state, sum_stats_vec),
+    docall_tapply = do.call("rbind", tapply(D$measurement, D$state, sum_stats_vec)),
+    sapply_tapply = sapply(tapply(D$measurement, D$state, sum_stats_vec), rbind),
+    reduce = reduce(D),
+    Rfast = Rfast(D),
+    dplyr = D |> dplyr::group_by(state) |> dplyr::summarise(sum_stats_tibble(measurement)) |> dplyr::ungroup(),
+    datatable = D[, .(sum_stats_list(measurement)), by = state],
+    times = 50
+)
+```
+
+```{r}
+#| label: fig-bench1e6
+ggplot2::autoplot(bench1e6)
+```
+
+```{r}
+#| label: tab-bench1e6
+reorderMicrobenchmarkResults(bench1e6)
+```
+
+
+```{r}
+#| label: bench-1e8
+#| cache: true
+D <- data.table::fread("measurements1e8.csv", stringsAsFactors = TRUE)
+
+bench1e8 <- microbenchmark::microbenchmark(
+    aggregate = aggregate(measurement ~ state, data = D, FUN = sum_stats_vec),
+    split_lapply = split_lapply(D),
+    array2DF_by = array2DF(by(D$measurement, D$state, sum_stats_vec)),
+    raw_by = by(D$measurement, D$state, sum_stats_vec),
+    docall_tapply = do.call("rbind", tapply(D$measurement, D$state, sum_stats_vec)),
+    sapply_tapply = sapply(tapply(D$measurement, D$state, sum_stats_vec), rbind),
+    reduce = reduce(D),
+    Rfast = Rfast(D),
+    dplyr = D |> dplyr::group_by(state) |> dplyr::summarise(sum_stats_tibble(measurement)) |> dplyr::ungroup(),
+    datatable = D[, .(sum_stats_list(measurement)), by = state],
+    times = 10
+)
+```
+
+```{r}
+#| label: fig-bench1e8
+ggplot2::autoplot(bench1e8)
+```
+
+```{r}
+#| label: tab-bench1e8
+reorderMicrobenchmarkResults(bench1e8)
+```

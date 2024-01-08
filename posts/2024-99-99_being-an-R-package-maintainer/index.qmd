@@ -5,6 +5,7 @@ author:
     orcid: 0000-0003-2952-4812
 date: 2024-01-02
 categories: [R, packages]
+draft: true
 ---
 
 In this post, I want to reflect upon my journey as an R package developer. As a disclaimer up front, I have no formal training in software engineering and all my knowledge comes from trail and error and reading up on the topic. So don't take this blog post as serious advice for how to develop/maintain R packages (or any type of software tools), but rather as personal story of how I became a mediocre R package maintainer.
