@@ -245,14 +245,14 @@ ggplot2::autoplot(reorderMicrobenchmarkResults(bench1e8))
 summary(reorderMicrobenchmarkResults(bench1e8)) |> knitr::kable()
 ```
 
-Again we see three groups, but this time with clearer cut-offs. `Rfast` and `data.table` dominate and Rfast actually has a slight edge! The second group are `tapply`, `reduce` and `dplyr`. Surprisingly, `by` falls of here, together with `split/lapply`.
+Again we see three groups, but this time with clearer cut-offs. `Rfast` and `data.table` dominate and Rfast actually has a slight edge! The second group are `tapply`, `reduce` and `dplyr`. Surprisingly, `by` falls behind here, together with `split/lapply`.
 
 ## Summary
 
 This was a fun little exercise, and I think I learned a lot of new things about base R, especially the existence of `arry2DF`! 
 
-What was surprising is how competitive base R actually is with the "big guns". I was expecting a var bigger margin between data.table and the base solutions, but that was not the case. 
+What was surprising is how competitive base R actually is with the "big guns". I was expecting a much bigger margin between data.table and the base solutions, but that was not the case. 
 
-[^1]: Also inspired by a post of [Danielle Navarro](https://blog.djnavarro.net/posts/2023-12-27_seedcatcher/) about the cultural loss of today;s serious blogging business.
+[^1]: Also inspired by a post of [Danielle Navarro](https://blog.djnavarro.net/posts/2023-12-27_seedcatcher/) about the cultural loss of today's serious blogging business.
 
 [^2]: It is far more readable though.
