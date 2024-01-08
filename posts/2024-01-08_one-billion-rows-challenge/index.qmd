@@ -7,7 +7,7 @@ date: 2024-01-08
 categories: [R]
 ---
 
-One of my new years resolutions is to blog a bit more on the random shenanigans I do with R. This is one of those.
+*One of my new years resolutions is to blog a bit more on the random shenanigans I do with R. This is one of those.*[^1]
 
 The [One Billion Row challenge](https://www.morling.dev/blog/one-billion-row-challenge/) by Gunnar Morling is as follows:
 
@@ -27,13 +27,15 @@ The R repository contains a [script](https://github.com/alejandrohagan/1br/blob/
 
 ## Reading the data
 
-All base R functions will profit from reading the station column as a factor instead of a usual string. How would have thought that `stringAsFactors = TRUE` can be useful.
+All base R functions will profit from reading the state column as a factor instead of a usual string. 
 
 ```{r}
 #| label: read_1e6
 D <- data.table::fread("measurements1e6.csv", stringsAsFactors = TRUE)
 D
 ```
+
+Who would have thought that `stringAsFactors = TRUE` can be useful.
 
 ## The obvious: aggregate and split/lapply
 
@@ -47,7 +49,7 @@ aggregate(measurement ~ state, data = D, FUN = sum_stats_vec) |> head()
 
 I was pretty sure that this might be the best solution.
 
-The other obvious solution is to split the data frame according to staty and then `lapply` the stats calculation on each list entry
+The other obvious solution is to split the data frame according to stats and then `lapply` the stats calculation on each list element.
 
 ```{r}
 #| label: split
@@ -68,7 +70,7 @@ split_lapply(D) |> head()
 
 ## The elegant: by
 
-I stumbled upon `by` when searching for alternatives. I think it is a quite elegant looking way of solving a group/summarize task with base R. Unfortunately it returns a list and not a data frame or matrix (I made that an implicit requirement).  
+I stumbled upon `by` when searching for alternatives. I think it is a quite elegant way of solving a group/summarize task with base R. Unfortunately it returns a list and not a data frame or matrix (I made that an implicit requirement).  
 
 In the help for `by` I stumbled upon a function I wasn't aware of yet: `array2DF`! 
 ```{r}
@@ -98,10 +100,17 @@ At this point, I was also curious if the `do.call("rbind",list)` can be sped up,
 sapply(tapply(D$measurement, D$state, sum_stats_vec), rbind) |> head()
 ```
 
+and we should obviously also include our new found `array2DF`
+
+```{r}
+#| label: tapply3
+array2DF(tapply(D$measurement, D$state, sum_stats_vec)) |> head()
+```
+
 ## The obscure: reduce
 
-I thought that this should be it, but the I remembered `reduce` exists.
-
+I thought that this should be it, but then I remembered `reduce` exists.
+The solution is somewhat similar to split/lapply.
 ```{r}
 #| label: reduce
 
@@ -109,14 +118,12 @@ reduce <- function(D) {
     state_list <- split(D$measurement, D$state)
     Reduce(function(x, y) {
         res <- sum_stats_vec(state_list[[y]])
-        rbind(x, c(state = y, mean = res[1], min = res[2], max = res[3]))
+        rbind(x, data.frame(state = y, mean = res[1], min = res[2], max = res[3]))
     }, names(state_list), init = NULL)
 }
 
 reduce(D) |> head()
 ```
-
-technically, this is a bit wrong since it it converts the numerical values to characters. But I allow it for this experiment.
 
 ## The unfair contender: Rfast
 
@@ -143,7 +150,7 @@ Pretty sure that this will be the fastest, maybe even competitive with the other
 
 ## Benchmark
 
-To reorder the benchmark results from `microbenchmark`, we use a function provided by [Dirk Eddelbuettel](https://github.com/eddelbuettel/dang/blob/master/R/reorderMicrobenchmarkResults.R).
+For better readability I reorder the benchmark results from `microbenchmark` according to median runtime, with a function provided by [Dirk Eddelbuettel](https://github.com/eddelbuettel/dang/blob/master/R/reorderMicrobenchmarkResults.R).
 ```{r}
 #| label: bench_print
 reorderMicrobenchmarkResults <- function(res, order = "median") {
@@ -158,6 +165,7 @@ reorderMicrobenchmarkResults <- function(res, order = "median") {
 }
 ```
 
+First up the "small" dataset with 1e6 rows. I added the `dplyr` and `data.table` results as references.
 
 ```{r}
 #| label: bench-1e6
@@ -172,37 +180,51 @@ bench1e6 <- microbenchmark::microbenchmark(
     raw_by = by(D$measurement, D$state, sum_stats_vec),
     docall_tapply = do.call("rbind", tapply(D$measurement, D$state, sum_stats_vec)),
     sapply_tapply = sapply(tapply(D$measurement, D$state, sum_stats_vec), rbind),
+    array2DF_tapply = array2DF(tapply(D$measurement, D$state, sum_stats_vec)),
     reduce = reduce(D),
     Rfast = Rfast(D),
     dplyr = D |> dplyr::group_by(state) |> dplyr::summarise(sum_stats_tibble(measurement)) |> dplyr::ungroup(),
     datatable = D[, .(sum_stats_list(measurement)), by = state],
-    times = 50
+    times = 25
 )
 ```
 
 ```{r}
-#| label: fig-bench1e6
-ggplot2::autoplot(bench1e6)
+#| echo: false
+library(microbenchmark)
+```
+
+
+```{r}
+#| label: plot-bench1e6
+ggplot2::autoplot(reorderMicrobenchmarkResults(bench1e6))
 ```
 
 ```{r}
 #| label: tab-bench1e6
-reorderMicrobenchmarkResults(bench1e6)
+#| echo: false
+summary(reorderMicrobenchmarkResults(bench1e6)) |> knitr::kable()
 ```
 
+First of, I was very surprised by the bad performance of `aggregate`. I looked at the source code and it appears to be a more fancy lapply/split type of functions with a lot of `if/else` and `for` which do slow down the function heavily. For the benchmark with the bigger dataset, I actually discarded the function because it was way too slow.
 
+Apart from that, there are three groups. `Rfast` and `data.table` are the fastest clearly the fastest. The second group are the `tapply` versions. I am quite pleased with the fact that the data frame building via `do.call`, `sapply` and `array2DF` are very much comparable, because I really like my `array2DF` discovery. The remaining solutions are pretty much comparable. I am surprised though, that `dplyr` falls behind many of the base solutions.[^2]
+
+Moving on to the 100 million file to see if size makes a difference.
 ```{r}
 #| label: bench-1e8
 #| cache: true
+
 D <- data.table::fread("measurements1e8.csv", stringsAsFactors = TRUE)
 
 bench1e8 <- microbenchmark::microbenchmark(
-    aggregate = aggregate(measurement ~ state, data = D, FUN = sum_stats_vec),
+    # aggregate = aggregate(measurement ~ state, data = D, FUN = sum_stats_vec),
     split_lapply = split_lapply(D),
     array2DF_by = array2DF(by(D$measurement, D$state, sum_stats_vec)),
     raw_by = by(D$measurement, D$state, sum_stats_vec),
     docall_tapply = do.call("rbind", tapply(D$measurement, D$state, sum_stats_vec)),
     sapply_tapply = sapply(tapply(D$measurement, D$state, sum_stats_vec), rbind),
+    array2DF_tapply = array2DF(tapply(D$measurement, D$state, sum_stats_vec)),
     reduce = reduce(D),
     Rfast = Rfast(D),
     dplyr = D |> dplyr::group_by(state) |> dplyr::summarise(sum_stats_tibble(measurement)) |> dplyr::ungroup(),
@@ -211,12 +233,26 @@ bench1e8 <- microbenchmark::microbenchmark(
 )
 ```
 
+
 ```{r}
-#| label: fig-bench1e8
-ggplot2::autoplot(bench1e8)
+#| label: plot-bench1e8
+ggplot2::autoplot(reorderMicrobenchmarkResults(bench1e8))
 ```
 
 ```{r}
 #| label: tab-bench1e8
-reorderMicrobenchmarkResults(bench1e8)
+#| echo: false
+summary(reorderMicrobenchmarkResults(bench1e8)) |> knitr::kable()
 ```
+
+Again we see three groups, but this time with clearer cut-offs. `Rfast` and `data.table` dominate and Rfast actually has a slight edge! The second group are `tapply`, `reduce` and `dplyr`. Surprisingly, `by` falls of here, together with `split/lapply`.
+
+## Summary
+
+This was a fun little exercise, and I think I learned a lot of new things about base R, especially the existence of `arry2DF`! 
+
+What was surprising is how competitive base R actually is with the "big guns". I was expecting a var bigger margin between data.table and the base solutions, but that was not the case. 
+
+[^1]: Also inspired by a post of [Danielle Navarro](https://blog.djnavarro.net/posts/2023-12-27_seedcatcher/) about the cultural loss of today;s serious blogging business.
+
+[^2]: It is far more readable though.
