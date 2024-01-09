@@ -262,7 +262,7 @@ bench1e9 <- microbenchmark::microbenchmark(
 ```
 ![](bench1e9.png)
 
-The previously fastest base solutions fall of a little bit, but are in my opinion still very good and still comparable with `dplyr`!
+The previously fastest base solutions fall of a little bit, but are in my opinion still very good and still comparable with `dplyr`! Also, I learned that one can reorder microbenchmark results with the print command!
 
 
 ## Summary
