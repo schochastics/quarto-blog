@@ -250,6 +250,7 @@ Again we see three groups, but this time with clearer cut-offs. `Rfast` and `dat
 **Update**(2024-01-09)  
 
 I managed to run some of the functions on a 1e9 file.
+
 ```r
 bench1e9 <- microbenchmark::microbenchmark(
     docall_tapply = do.call("rbind", tapply(D$measurement, D$state, sum_stats_vec)),
@@ -263,7 +264,6 @@ bench1e9 <- microbenchmark::microbenchmark(
 ![](bench1e9.png)
 
 The previously fastest base solutions fall of a little bit, but are in my opinion still very good and still comparable with `dplyr`! Also, I learned that one can reorder microbenchmark results with the print command!
-
 
 ## Summary
 
