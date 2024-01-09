@@ -257,7 +257,7 @@ bench1e9 <- microbenchmark::microbenchmark(
     Rfast = Rfast(D),
     dplyr = D |> dplyr::group_by(state) |> dplyr::summarise(sum_stats_tibble(measurement)) |> dplyr::ungroup(),
     datatable = D[, .(sum_stats_list(measurement)), by = state],
-    times = 1
+    times = 5
 )
 ```
 ![](bench1e9.png)
