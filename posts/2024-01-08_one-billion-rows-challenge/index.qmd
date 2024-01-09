@@ -247,6 +247,24 @@ summary(reorderMicrobenchmarkResults(bench1e8)) |> knitr::kable()
 
 Again we see three groups, but this time with clearer cut-offs. `Rfast` and `data.table` dominate and Rfast actually has a slight edge! The second group are `tapply`, `reduce` and `dplyr`. Surprisingly, `by` falls behind here, together with `split/lapply`.
 
+**Update**(2024-01-09)  
+
+I managed to run some of the functions on a 1e9 file.
+```r
+bench1e9 <- microbenchmark::microbenchmark(
+    docall_tapply = do.call("rbind", tapply(D$measurement, D$state, sum_stats_vec)),
+    reduce = reduce(D),
+    Rfast = Rfast(D),
+    dplyr = D |> dplyr::group_by(state) |> dplyr::summarise(sum_stats_tibble(measurement)) |> dplyr::ungroup(),
+    datatable = D[, .(sum_stats_list(measurement)), by = state],
+    times = 1
+)
+```
+![](bench1e9.png)
+
+The previously fastest base solutions fall of a little bit, but are in my opinion still very good and still comparable with `dplyr`!
+
+
 ## Summary
 
 This was a fun little exercise, and I think I learned a lot of new things about base R, especially the existence of `arry2DF`! 
