@@ -1,0 +1,11 @@
+---
+title: "Analysing collaborations among R package developers"
+author:
+  - name: David Schoch
+    orcid: 0000-0003-2952-4812
+date: 2024-01-12
+categories: [R, networks, data analysis]
+---
+
+[original repo](https://github.com/schochastics/CRAN_collaboration)
+[tidytuesday](https://github.com/rfordatascience/tidytuesday/tree/master/data/2023/2023-09-19)
