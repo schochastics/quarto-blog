@@ -3,9 +3,28 @@ title: "Analysing collaborations among R package developers"
 author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
-date: 2024-01-12
+date: 2024-01-15
 categories: [R, networks, data analysis]
 ---
 
-[original repo](https://github.com/schochastics/CRAN_collaboration)
-[tidytuesday](https://github.com/rfordatascience/tidytuesday/tree/master/data/2023/2023-09-19)
+Once upon a time I was a hardcore network scientist. These days though, they are more peripheral in my work and I just like to toy around with interesting datasets. One of those is the CRAN co-authorship, or *collaboration network*. This network can be easily assembled based on the authors field in all DESCRIPTION files of packages available on CRAN. I have done a low level analysis on [GitHub](https://github.com/schochastics/CRAN_collaboration), also featured in
+[tidytuesday](https://github.com/rfordatascience/tidytuesday/tree/master/data/2023/2023-09-19) and including the introduction of the Hadley number, but always wanted to do a longer write up. After reading [Working in Public: The Making and Maintenance of Open Source Software](https://press.stripe.com/working-in-public), I finally got the last bit of motivation for it. The book deals with modern Open Source development (mostly on GitHub) which is more collaborative than "in the old days". 
+
+For this, I will not only use the data provided by CRAN, but also by [r-universe](https://r-universe.dev).
+
+## Getting Data
+
+```{r}
+#| label: load-packages
+library(tidyverse)
+
+```
+It is actually quite easy to get all DESCRIPTION data from CRAN. It is a single function call. 
+```{r}
+#| label: get-cran-data
+db <- tools::CRAN_package_db()
+str(db)
+```
+
+
+[script](https://github.com/schochastics/CRAN_collaboration/blob/main/Rscripts/helpers.R) to clean author names
