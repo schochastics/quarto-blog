@@ -12,19 +12,68 @@ Once upon a time I was a hardcore network scientist. These days though, they are
 
 For this, I will not only use the data provided by CRAN, but also by [r-universe](https://r-universe.dev).
 
-## Getting Data
+## Getting Data from CRAN and r-universe
 
 ```{r}
 #| label: load-packages
-library(tidyverse)
+#| messages: false
 
+library(tidyverse)
 ```
-It is actually quite easy to get all DESCRIPTION data from CRAN. It is a single function call. 
+
+It is actually quite easy to get all DESCRIPTION (and more!) metadata from CRAN. It is a single function call. 
 ```{r}
 #| label: get-cran-data
+#| eval: false
 db <- tools::CRAN_package_db()
 str(db)
 ```
 
+```{r}
+#| label: read-cran-data
+#| echo: false
+#| warning: false
+db <- read_csv("db_2024-01-13.csv")
+str(db)
+```
 
-[script](https://github.com/schochastics/CRAN_collaboration/blob/main/Rscripts/helpers.R) to clean author names
+
+```{r}
+#| label: silent-source
+#| echo: false
+source("helpers.R")
+```
+
+The actual hard part is to clean up the authors field. I tried to to this semi-automatically with a [script](https://github.com/schochastics/CRAN_collaboration/blob/main/Rscripts/helpers.R) which was very tideous and I am sure I missed some.
+
+```{r}
+#| label: clean-authors
+#| cache: true
+author_pkg_cran <- author_cleaner(db)
+```
+
+
+```{r}
+#| label: cleaned-authors
+str(author_pkg_cran)
+```
+
+```{r}
+# remotes::install_github("coolbutuseless/yyjsonr",ref = "ndjson")
+packageVersion("yyjsonr")
+```
+
+```{r}
+#| label: get-runiverse-data
+#| eval: false
+url <- "https://r-universe.dev/stats/contributors"
+download.file(url, destfile = "contributors.dev")
+contribs <- yyjsonr::read_ndjson_file("contributors.dev")
+```
+
+
+```{r}
+#| label: read-runiverse-data
+#| echo: false
+contribs <- yyjsonr::read_ndjson_file("contributors_2024-01-13.dev")
+```
