@@ -58,22 +58,50 @@ author_pkg_cran <- author_cleaner(db)
 str(author_pkg_cran)
 ```
 
-```{r}
-# remotes::install_github("coolbutuseless/yyjsonr",ref = "ndjson")
-packageVersion("yyjsonr")
-```
+Getting the same kind of data from [r-universe](https://r-universe.dev) is, surprisingly, not complicated at all.
 
 ```{r}
 #| label: get-runiverse-data
 #| eval: false
 url <- "https://r-universe.dev/stats/contributors"
 download.file(url, destfile = "contributors.dev")
-contribs <- yyjsonr::read_ndjson_file("contributors.dev")
+```
+
+A little tricky is the reading of the data as it comes in ndjson format. I have started using [`yyjsonr`](https://github.com/coolbutuseless/yyjsonr) a while back for all my json needs, but the `ndjson` support was removed for the first CRAN submission. At the time of writing, you can install `yyjsonr` from a branch in the GitHub repository. 
+
+```{r}
+# remotes::install_github("coolbutuseless/yyjsonr",ref = "ndjson")
+packageVersion("yyjsonr")
 ```
 
 
 ```{r}
 #| label: read-runiverse-data
+#| eval: false
+contribs <- yyjsonr::read_ndjson_file("contributors.dev")
+```
+
+```{r}
+#| label: read-runiverse-data-silent
 #| echo: false
 contribs <- yyjsonr::read_ndjson_file("contributors_2024-01-13.dev")
 ```
+
+The data only needs minimal cleaning to be in usable form.
+
+```{r}
+#| label: clean-runiverse-data
+author_pkg_runiv <- map_dfr(seq_len(length(contribs$login)), \(x) bind_cols(author = contribs$login[x], contribs$repos[[x]]))
+
+author_pkg_runiv <- author_pkg_runiv |>
+    mutate(
+        package = word(upstream, -1, sep = "/"),
+        owner = word(upstream, -2, sep = "/"),
+        repo = paste0(owner, "/", package)
+    ) |>
+    filter(!owner %in% c("cran", "bioconductor"))
+```
+
+The r-universe dataset has the big advantage that there is no author cleaning required. We also get an aditional interesting stat to play with: how many contributions a developer made to a repository. 
+
+## header
