@@ -1,5 +1,5 @@
 ---
-title: "Analysing collaborations among R package developers"
+title: "Collaborations among R package developers"
 author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
@@ -12,14 +12,17 @@ Once upon a time I was a hardcore network scientist. These days though, they are
 
 For this, I will not only use the data provided by CRAN, but also by [r-universe](https://r-universe.dev).
 
-## Getting Data from CRAN and r-universe
 
 ```{r}
 #| label: load-packages
-#| messages: false
+#| message: false
 
 library(tidyverse)
+library(igraph)
+library(netUtils)
 ```
+
+## Getting Data from CRAN and r-universe
 
 It is actually quite easy to get all DESCRIPTION (and more!) metadata from CRAN. It is a single function call. 
 ```{r}
@@ -105,3 +108,49 @@ author_pkg_runiv <- author_pkg_runiv |>
 The r-universe dataset has the big advantage that there is no author cleaning required. We also get an aditional interesting stat to play with: how many contributions a developer made to a repository. 
 
 ## header
+
+## CRAN collaboration network
+
+
+```{r}
+#| label: cran-network
+author_pkg_cran_net <- netUtils::bipartite_from_data_frame(author_pkg_cran, "authorsR", "Package")
+A <- as_biadjacency_matrix(author_pkg_cran_net, sparse = TRUE)
+A <- as(A, "sparseMatrix")
+B <- Matrix::t(A) %*% A
+auth_auth_net <- graph_from_adjacency_matrix(B, "undirected", diag = FALSE, weighted = TRUE)
+auth_auth_net
+```
+
+
+```{r}
+#| label: cran-components
+
+comps_cran <- components(auth_auth_net)
+comps_cran$no
+```
+
+
+```{r}
+auth_auth_net_largest <- largest_component(auth_auth_net)
+auth_auth_net_largest
+```
+
+## Six Degrees of Hadley Wickham
+
+If you are familiar with the [Erdős
+number](https://en.wikipedia.org/wiki/Erd%C5%91s_number) number and/or
+the [Bacon
+number](https://en.wikipedia.org/wiki/Six_Degrees_of_Kevin_Bacon#Bacon_numbers)
+then you know where this is going. The “Hadley number” is defined as the
+distance of R developers to Hadley Wickham in the collaboration network.
+Someone (“A”) who contributed to a package that Hadley has contributed
+to has a Hadley number of 1. Someone who contributed to a package that A
+has contributed to but not Hadley has Hadley number 2, and so on. Hadley
+himself is the only person with Hadley number 0
+
+## The center of the collaboration network
+
+The center of the collaboration network is defined as the developer
+who’s average distance to all other developers is the lowest. The top
+ten developers in that regard are shown below.
