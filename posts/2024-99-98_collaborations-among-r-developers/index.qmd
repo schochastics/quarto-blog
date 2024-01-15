@@ -132,6 +132,7 @@ comps_cran$no
 
 
 ```{r}
+#| label: largest-component
 auth_auth_net_largest <- largest_component(auth_auth_net)
 auth_auth_net_largest
 ```
@@ -161,14 +162,40 @@ has contributed to but not Hadley has Hadley number 2, and so on. Hadley
 himself is the only person with Hadley number 0.
 
 ```{r}
-
+#| label: plot-hadley
+#| echo: false
+author_tbl |>
+    count(dist2HW) |>
+    ggplot(aes(x = dist2HW, y = n)) +
+    geom_col(color = "white", fill = "black") +
+    theme_minimal() +
+    theme(
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+    ) +
+    scale_x_continuous(breaks = seq(0, 10), name = "Hadley Number")
 ```
+
+The maximum Hadley number is `r max(author_tbl$dist2HW)` and the average is `r round(mean(author_tbl$dist2HW),2)`.
 
 ## The center of the collaboration network
 
 The center of the collaboration network is defined as the developer
 who’s average distance to all other developers is the lowest. The top
 ten developers in that regard are shown below.
+
+
+```{r}
+#| echo: false
+#| label: tbl-center
+author_tbl |>
+    select(name, centrality = cc) |>
+    dplyr::top_n(10, -centrality) |>
+    dplyr::arrange(centrality) |>
+    knitr::kable()
+```
+
+## Explore
 
 ```{r}
 #| label: reactable-hadley
