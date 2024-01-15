@@ -1,0 +1,188 @@
+---
+title: "Six degrees of Hadley Wickham: The CRAN co-authorship network"
+author:
+  - name: David Schoch
+    orcid: 0000-0003-2952-4812
+date: 2024-01-16
+categories: [R, networks, data analysis]
+---
+
+Once upon a time I was a dedicated network scientist. These days though, they are more peripheral in my work and I just like to toy around with interesting datasets. One of those is the CRAN *co-authorship network*. 
+In such a network, two individuals (in this case R developers), are connected, if they authored a piece of work together. Here, a piece of work is an R package. This network can be easily assembled based on the authors field in all DESCRIPTION files of packages available on CRAN. I have done a low level analysis on [GitHub](https://github.com/schochastics/CRAN_collaboration), also featured in
+[tidytuesday](https://github.com/rfordatascience/tidytuesday/tree/master/data/2023/2023-09-19), including the introduction of the **Hadley number**, but I always wanted to do a longer write up. And voila, this is the write up.
+
+```{r}
+#| label: load-packages
+#| message: false
+
+library(tidyverse)
+library(igraph)
+library(netUtils)
+```
+
+## Getting the Data
+
+It is actually quite easy to get all metadata (and more!) of the DESCRIPTION files from CRAN. It is a single function call. 
+```{r}
+#| label: get-cran-data
+#| eval: false
+db <- tools::CRAN_package_db()
+str(db)
+```
+
+
+```{r}
+#| label: read-cran-data
+#| echo: false
+#| warning: false
+db <- read_csv("db_2024-01-13.csv")
+str(db)
+```
+
+```{r}
+#| label: silent-source
+#| echo: false
+source("helpers.R")
+```
+
+The actual hard part is to clean up the authors field, because while there exists some standard forms, there is still a lot of free text going on. I tried to to this semi-automatically with a [script](https://github.com/schochastics/CRAN_collaboration/blob/main/Rscripts/helpers.R) which was very tideous and I am sure it is not perfect.
+
+```{r}
+#| label: clean-authors
+#| cache: true
+author_pkg_cran <- author_cleaner(db)
+```
+
+```{r}
+#| label: cleaned-authors
+str(author_pkg_cran)
+```
+
+## Building the network
+
+The code below is used to build the co-authorship network as a weighted network. The weight indicates, how many packages two developers have authored together.
+
+```{r}
+#| label: cran-network
+author_pkg_cran_net <- netUtils::bipartite_from_data_frame(author_pkg_cran, "authorsR", "Package")
+A <- as_biadjacency_matrix(author_pkg_cran_net, sparse = TRUE)
+A <- as(A, "sparseMatrix")
+B <- Matrix::t(A) %*% A
+auth_auth_net <- graph_from_adjacency_matrix(B, "undirected", diag = FALSE, weighted = TRUE)
+auth_auth_net
+```
+
+To check if this is a connected network (there is a path connecting any pair of developers), we use the `igraph::components()` function.
+
+```{r}
+#| label: cran-components
+comps_cran <- components(auth_auth_net)
+comps_cran$no
+```
+
+Thats quite a big number of components, which is not necessarily surprising. Many package authors (or teams of authors) have only ever worked on one package and thus never interacted with the broader R developer community.
+The biggest component can be extracted with the `igraph::largest_component()`.
+
+```{r}
+#| label: largest-component
+auth_auth_net_largest <- largest_component(auth_auth_net)
+auth_auth_net_largest
+```
+
+From the `r format(length(unique(author_pkg_cran$authorsR)),big.mark=",")` recorded package authors, `r format(vcount(auth_auth_net_largest),big.mark=",")` (`r round(vcount(auth_auth_net_largest)/length(unique(author_pkg_cran$authorsR))*100,2)`%) are part of the largest connected component. All subsequent analyses will be done with this network.
+
+![The biggest Component of the CRAN co-authorship network](https://github.com/schochastics/CRAN_collaboration/raw/main/figures/network.png)
+
+On average, every developer has `r mean(degree(auth_auth_net_largest))` co-authors. The median is `r median(degree(auth_auth_net_largest))`. The person with the most co-authors, namely `r max(degree(auth_auth_net_largest))`, is actually `r V(auth_auth_net_largest)$name[which.max(degree(auth_auth_net_largest))]`. What a great transition for the next section.
+
+## Six Degrees of Hadley Wickham
+
+```{r}
+#| label: hadley-number
+#| echo: false
+#| cache: true
+hadley_idx <- which(V(auth_auth_net_largest)$name == "Hadley Wickham")
+author_tbl <- tibble(
+    name = V(auth_auth_net_largest)$name,
+    dist2HW = distances(auth_auth_net_largest, to = hadley_idx, weights = NA),
+    cc = (1 / closeness(auth_auth_net_largest, weights = NA)) * 1 / vcount(auth_auth_net_largest)
+)
+```
+
+If you are familiar with the [Erdős
+number](https://en.wikipedia.org/wiki/Erd%C5%91s_number) number and/or
+the [Bacon
+number](https://en.wikipedia.org/wiki/Six_Degrees_of_Kevin_Bacon#Bacon_numbers)
+then you know where this is going. The "Hadley number" is defined as the
+distance of R developers to Hadley Wickham in the co-authorship network.[^1]
+Someone (“A”) who coauthored a package that Hadley has contributed
+to has a Hadley number of 1. Someone who coauthored a package that A
+has coauthored but not Hadley has Hadley number 2, and so on. Hadley
+himself is the only person with Hadley number 0. Below is the distribution of the Hadley number for all developers in the largest connected component. 
+
+```{r}
+#| label: plot-hadley
+#| echo: false
+author_tbl |>
+    count(dist2HW) |>
+    ggplot(aes(x = dist2HW, y = n)) +
+    geom_col(color = "white", fill = "black") +
+    theme_minimal() +
+    theme(
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+    ) +
+    scale_x_continuous(breaks = seq(0, 10), name = "Hadley Number")
+```
+
+The maximum Hadley number is `r max(author_tbl$dist2HW)` and the average is `r round(mean(author_tbl$dist2HW),2)`.
+
+To check your own Hadley number (if you are in the largest connected component, and my cleaning script didn't butcher your name), scroll to the end of this post.
+
+## The center of the collaboration network
+
+The center of the collaboration network is defined as the developer
+who’s average distance to all other developers is the lowest. The top
+ten developers in that regard are shown below.
+
+```{r}
+#| echo: false
+#| label: tbl-center
+author_tbl |>
+    select(name, centrality = cc) |>
+    dplyr::top_n(10, -centrality) |>
+    dplyr::arrange(centrality) |>
+    knitr::kable()
+```
+
+Surprise, surprise, it is Hadley again!
+
+## Full results
+
+```{r}
+#| label: reactable-hadley
+#| echo: false
+
+options(reactable.theme = reactable::reactableTheme(
+    color = "hsl(233, 9%, 87%)",
+    backgroundColor = "hsl(233, 9%, 19%)",
+    borderColor = "hsl(233, 9%, 22%)",
+    stripedColor = "hsl(233, 12%, 22%)",
+    highlightColor = "hsl(233, 12%, 24%)",
+    inputStyle = list(backgroundColor = "hsl(233, 9%, 25%)"),
+    selectStyle = list(backgroundColor = "hsl(233, 9%, 25%)"),
+    pageButtonHoverStyle = list(backgroundColor = "hsl(233, 9%, 25%)"),
+    pageButtonActiveStyle = list(backgroundColor = "hsl(233, 9%, 28%)")
+))
+
+reactable::reactable(author_tbl,
+    filterable = TRUE,
+    minRows = 10,
+    defaultSorted = list(dist2HW = "asc"),
+    highlight = TRUE,
+    striped = TRUE,
+    showPageSizeOptions = TRUE
+)
+```
+
+[^1]: I love this type of numbers. On this blog I also introduced the [Zlatan number](http://blog.schochastics.net/posts/2018-09-28_six-degrees-of-zlatan-ibrahimovic/). 
