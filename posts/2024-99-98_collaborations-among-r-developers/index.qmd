@@ -149,6 +149,42 @@ to has a Hadley number of 1. Someone who contributed to a package that A
 has contributed to but not Hadley has Hadley number 2, and so on. Hadley
 himself is the only person with Hadley number 0
 
+```{r}
+#| label: hadley-number
+hadley_idx <- which(V(auth_auth_net_largest)$name == "Hadley Wickham")
+author_tbl <- tibble(
+    name = V(auth_auth_net_largest)$name,
+    dist2HW = distances(auth_auth_net_largest, to = hadley_idx, weights = NA),
+    cc = (1 / closeness(auth_auth_net_largest, weights = NA)) * 1 / vcount(auth_auth_net_largest)
+)
+```
+
+```{r}
+#| label: reactable-hadley
+#| echo: false
+
+options(reactable.theme = reactable::reactableTheme(
+    color = "hsl(233, 9%, 87%)",
+    backgroundColor = "hsl(233, 9%, 19%)",
+    borderColor = "hsl(233, 9%, 22%)",
+    stripedColor = "hsl(233, 12%, 22%)",
+    highlightColor = "hsl(233, 12%, 24%)",
+    inputStyle = list(backgroundColor = "hsl(233, 9%, 25%)"),
+    selectStyle = list(backgroundColor = "hsl(233, 9%, 25%)"),
+    pageButtonHoverStyle = list(backgroundColor = "hsl(233, 9%, 25%)"),
+    pageButtonActiveStyle = list(backgroundColor = "hsl(233, 9%, 28%)")
+))
+
+reactable::reactable(author_tbl,
+    filterable = TRUE,
+    minRows = 10,
+    defaultSorted = list(dist2HW = "asc"),
+    highlight = TRUE,
+    striped = TRUE,
+    showPageSizeOptions = TRUE
+)
+```
+
 ## The center of the collaboration network
 
 The center of the collaboration network is defined as the developer
