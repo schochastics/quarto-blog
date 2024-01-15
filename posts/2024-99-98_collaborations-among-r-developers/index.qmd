@@ -138,6 +138,17 @@ auth_auth_net_largest
 
 ## Six Degrees of Hadley Wickham
 
+```{r}
+#| label: hadley-number
+#| echo: false
+hadley_idx <- which(V(auth_auth_net_largest)$name == "Hadley Wickham")
+author_tbl <- tibble(
+    name = V(auth_auth_net_largest)$name,
+    dist2HW = distances(auth_auth_net_largest, to = hadley_idx, weights = NA),
+    cc = (1 / closeness(auth_auth_net_largest, weights = NA)) * 1 / vcount(auth_auth_net_largest)
+)
+```
+
 If you are familiar with the [Erdős
 number](https://en.wikipedia.org/wiki/Erd%C5%91s_number) number and/or
 the [Bacon
@@ -147,17 +158,17 @@ distance of R developers to Hadley Wickham in the collaboration network.
 Someone (“A”) who contributed to a package that Hadley has contributed
 to has a Hadley number of 1. Someone who contributed to a package that A
 has contributed to but not Hadley has Hadley number 2, and so on. Hadley
-himself is the only person with Hadley number 0
+himself is the only person with Hadley number 0.
 
 ```{r}
-#| label: hadley-number
-hadley_idx <- which(V(auth_auth_net_largest)$name == "Hadley Wickham")
-author_tbl <- tibble(
-    name = V(auth_auth_net_largest)$name,
-    dist2HW = distances(auth_auth_net_largest, to = hadley_idx, weights = NA),
-    cc = (1 / closeness(auth_auth_net_largest, weights = NA)) * 1 / vcount(auth_auth_net_largest)
-)
+
 ```
+
+## The center of the collaboration network
+
+The center of the collaboration network is defined as the developer
+who’s average distance to all other developers is the lowest. The top
+ten developers in that regard are shown below.
 
 ```{r}
 #| label: reactable-hadley
@@ -185,8 +196,3 @@ reactable::reactable(author_tbl,
 )
 ```
 
-## The center of the collaboration network
-
-The center of the collaboration network is defined as the developer
-who’s average distance to all other developers is the lowest. The top
-ten developers in that regard are shown below.
