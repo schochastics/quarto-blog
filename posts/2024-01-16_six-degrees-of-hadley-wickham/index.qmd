@@ -113,10 +113,15 @@ If you are familiar with the [Erdős
 number](https://en.wikipedia.org/wiki/Erd%C5%91s_number) number and/or
 the [Bacon
 number](https://en.wikipedia.org/wiki/Six_Degrees_of_Kevin_Bacon#Bacon_numbers)
-then you know where this is going. The "Hadley number" is defined as the
+then you know where this is going. Erdős was working on
+solutions to complex mathematical problems with a large number of co-authors by travelling the world and he published more than 1500 papers during his lifetime.
+In honor of his prolific (and excentric) life, the "Erdős number" was created.
+This number describes the "collaboration distance" (or the degree of separation) between Paul Erdős and other mathematicians, measured by the authorship of papers. Authors who have written a paper with Erdős have an Erdős number of 1. Mathematicians who have co-authored with those
+but not Erdős himself have an Erdős number of 2, and so on.
+The "Hadley number" is defined as the
 distance of R developers to Hadley Wickham in the co-authorship network.[^1]
-Someone (“A”) who coauthored a package that Hadley has contributed
-to has a Hadley number of 1. Someone who coauthored a package that A
+Someone (“A”) who coauthored a package that Hadley is a coauthor of
+has a Hadley number of 1. Someone who coauthored a package that A
 has coauthored but not Hadley has Hadley number 2, and so on. Hadley
 himself is the only person with Hadley number 0. Below is the distribution of the Hadley number for all developers in the largest connected component. 
 
