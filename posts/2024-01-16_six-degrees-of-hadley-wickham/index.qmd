@@ -113,13 +113,12 @@ If you are familiar with the [Erdős
 number](https://en.wikipedia.org/wiki/Erd%C5%91s_number) number and/or
 the [Bacon
 number](https://en.wikipedia.org/wiki/Six_Degrees_of_Kevin_Bacon#Bacon_numbers)
-then you know where this is going. Erdős was working on
-solutions to complex mathematical problems with a large number of co-authors by travelling the world and he published more than 1500 papers during his lifetime.
+then you know where this is going. Erdős was an incredibly prolific mathematician, publishing more than 1500 papers with a large number of co-authors by travelling the world.
 In honor of his prolific (and excentric) life, the "Erdős number" was created.
 This number describes the "collaboration distance" (or the degree of separation) between Paul Erdős and other mathematicians, measured by the authorship of papers. Authors who have written a paper with Erdős have an Erdős number of 1. Mathematicians who have co-authored with those
-but not Erdős himself have an Erdős number of 2, and so on.
+but not Erdős himself have an Erdős number of 2, and so on.[^1]
 The "Hadley number" is defined as the
-distance of R developers to Hadley Wickham in the co-authorship network.[^1]
+distance of R developers to Hadley Wickham in the co-authorship network.[^2]
 Someone (“A”) who coauthored a package that Hadley is a coauthor of
 has a Hadley number of 1. Someone who coauthored a package that A
 has coauthored but not Hadley has Hadley number 2, and so on. Hadley
@@ -142,7 +141,7 @@ author_tbl |>
 
 The maximum Hadley number is `r max(author_tbl$dist2HW)` and the average is `r round(mean(author_tbl$dist2HW),2)`.
 
-To check your own Hadley number (if you are in the largest connected component, and my cleaning script didn't butcher your name), scroll to the end of this post.
+To check your own Hadley number (if you are in the largest connected component, and my cleaning script didn't butcher your name), scroll to the end of this post.[^3]
 
 ## The center of the collaboration network
 
@@ -190,4 +189,6 @@ reactable::reactable(author_tbl,
 )
 ```
 
-[^1]: I love this type of numbers. On this blog I also introduced the [Zlatan number](http://blog.schochastics.net/posts/2018-09-28_six-degrees-of-zlatan-ibrahimovic/). 
+[^1]: My Erdős Number is 4
+[^2]: I love this type of numbers. On this blog I also introduced the [Zlatan number](http://blog.schochastics.net/posts/2018-09-28_six-degrees-of-zlatan-ibrahimovic/). 
+[^3]: My Hadley Number is 2
