@@ -81,7 +81,8 @@ comps_cran <- components(auth_auth_net)
 comps_cran$no
 ```
 
-Thats quite a big number of components, which is not necessarily surprising. Many package authors (or teams of authors) have only ever worked on one package and thus never interacted with the broader R developer community.
+Thats quite a big number of components, which is not necessarily surprising. Many package authors (or teams of authors) have only ever worked on one package (more than 40% of all packages are actually single-authored) and thus never interacted with the broader R developer community on any other package. 
+
 The biggest component can be extracted with the `igraph::largest_component()`.
 
 ```{r}
@@ -92,9 +93,7 @@ auth_auth_net_largest
 
 From the `r format(length(unique(author_pkg_cran$authorsR)),big.mark=",")` recorded package authors, `r format(vcount(auth_auth_net_largest),big.mark=",")` (`r round(vcount(auth_auth_net_largest)/length(unique(author_pkg_cran$authorsR))*100,2)`%) are part of the largest connected component. All subsequent analyses will be done with this network.
 
-![The biggest Component of the CRAN co-authorship network](https://github.com/schochastics/CRAN_collaboration/raw/main/figures/network.png)
-
-On average, every developer has `r mean(degree(auth_auth_net_largest))` co-authors. The median is `r median(degree(auth_auth_net_largest))`. 
+![Plot of the biggest component of the CRAN co-authorship network](https://github.com/schochastics/CRAN_collaboration/raw/main/figures/network.png)
 
 ```{r}
 #| label: emax
@@ -103,9 +102,8 @@ emax_who <- ends(auth_auth_net_largest, E(auth_auth_net_largest)[which.max(E(aut
 emax <- max(E(auth_auth_net_largest)$weight)
 ```
 
-The two individuals who coauthored the most packages together, namely `r emax`, are `r emax_who[1]` and `r emax_who[2]`.
-
-The person with the most co-authors, namely `r max(degree(auth_auth_net_largest))`, is `r V(auth_auth_net_largest)$name[which.max(degree(auth_auth_net_largest))]`. What a great transition for the next section.
+On average, every developer has `r round(mean(degree(auth_auth_net_largest)),2)` co-authors. The median is `r median(degree(auth_auth_net_largest))`. 
+The two individuals who coauthored the most packages together (`r emax`), are `r emax_who[1]` and `r emax_who[2]`. The person with the most co-authors (`r max(degree(auth_auth_net_largest))`) is `r V(auth_auth_net_largest)$name[which.max(degree(auth_auth_net_largest))]`. What a great transition for the next section.
 
 ## Six Degrees of Hadley Wickham
 
@@ -130,11 +128,12 @@ then you know where this is going. Erdős was an incredibly prolific mathematici
 In honor of his prolific (and excentric) life, the "Erdős number" was created.
 This number describes the "collaboration distance" (or the degree of separation) between Paul Erdős and other mathematicians, measured by the authorship of papers. Authors who have written a paper with Erdős have an Erdős number of 1. Mathematicians who have co-authored with those
 but not Erdős himself have an Erdős number of 2, and so on.[^1]
-The "Hadley number" is defined as the
-distance of R developers to Hadley Wickham in the co-authorship network.[^2]
-Someone (“A”) who coauthored a package that Hadley is a coauthor of
-has a Hadley number of 1. Someone who coauthored a package that A
-has coauthored but not Hadley has Hadley number 2, and so on. Hadley
+The same principle has been employed in other domains[^2], most prominently in the movie industry with the "Six degrees of Kevin Bacon". The Bacon number shows how far away an actor is from appearing in a movie with Kevin Bacon.
+
+The "Hadley number" can similarly be defined as the distance of R developers to Hadley Wickham in the co-authorship network.
+Someone (“A”) who developed a package that Hadley is a develeloper of
+has a Hadley number of 1. Someone who developed a package that A
+has developed but not Hadley has Hadley number 2, and so on. Hadley
 himself is the only person with Hadley number 0. Below is the distribution of the Hadley number for all developers in the largest connected component. 
 
 ```{r}
@@ -158,9 +157,7 @@ To check your own Hadley number (if you are in the largest connected component, 
 
 ## The center of the collaboration network
 
-The center of the collaboration network is defined as the developer
-who’s average distance to all other developers is the lowest. The top
-ten developers in that regard are shown below.
+An interesting question one can ask here is who the center of the network is. That is, the person who has the smallest average distance to all other developers. The top ten developers in that regard are shown below. The full list can again be explored at the end of this post.
 
 ```{r}
 #| echo: false
@@ -176,11 +173,14 @@ Surprise, surprise, it is Hadley again!
 
 ## Full results
 
+In the below table, you can search for your own Hadley number and where you rank in terms of centrality. 
+
 ```{r}
 #| label: reactable-hadley
 #| echo: false
 
 author_tbl <- author_tbl |>
+    mutate(`centrality ranking` = rank(cc)) |>
     rename(`Hadley Number` = dist2HW, `centrality` = cc)
 
 options(reactable.theme = reactable::reactableTheme(
@@ -198,7 +198,7 @@ options(reactable.theme = reactable::reactableTheme(
 reactable::reactable(author_tbl,
     filterable = TRUE,
     minRows = 10,
-    defaultSorted = list(`Hadley Number` = "asc"),
+    defaultSorted = list(`centrality` = "asc"),
     highlight = TRUE,
     striped = TRUE,
     showPageSizeOptions = TRUE
