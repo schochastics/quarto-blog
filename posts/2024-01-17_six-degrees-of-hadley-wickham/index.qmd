@@ -3,13 +3,13 @@ title: "Six degrees of Hadley Wickham: The CRAN co-authorship network"
 author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
-date: 2024-01-16
+date: 2024-01-17
 categories: [R, networks, data analysis]
 ---
 
-Once upon a time I was a dedicated network scientist. These days though, they are more peripheral in my work and I just like to toy around with interesting datasets. One of those is the CRAN *co-authorship network*. 
-In such a network, two individuals (in this case R developers), are connected, if they authored a piece of work together. Here, a piece of work is an R package. This network can be easily assembled based on the authors field in all DESCRIPTION files of packages available on CRAN. I have done a low level analysis on [GitHub](https://github.com/schochastics/CRAN_collaboration), also featured in
-[tidytuesday](https://github.com/rfordatascience/tidytuesday/tree/master/data/2023/2023-09-19), including the introduction of the **Hadley number**, but I always wanted to do a longer write up. And voila, this is the write up.
+Once upon a time I was a dedicated network scientist. Currently though they are more peripheral in my work and I just like to toy around with interesting datasets. One of those is the CRAN *co-authorship network*. 
+In a co-authorship network, two individuals (in our case R developers), are connected, if they authored a piece of work together. Here, a "piece of work" is an R package. This network can be assembled quite easily based on the authors field in all DESCRIPTION files of packages available on CRAN. I have done a low level analysis on [GitHub](https://github.com/schochastics/CRAN_collaboration), also featured in
+[tidytuesday](https://github.com/rfordatascience/tidytuesday/tree/master/data/2023/2023-09-19), including the introduction of the **Hadley number**, but I always wanted to do a longer write up. And voila, this is said write up.
 
 ```{r}
 #| label: load-packages
@@ -30,7 +30,6 @@ db <- tools::CRAN_package_db()
 str(db)
 ```
 
-
 ```{r}
 #| label: read-cran-data
 #| echo: false
@@ -39,13 +38,15 @@ db <- read_csv("db_2024-01-13.csv")
 str(db)
 ```
 
+A lot of data one can do a lot of things with, but we only need to fields. The package name and the authors.
+
 ```{r}
 #| label: silent-source
 #| echo: false
 source("helpers.R")
 ```
 
-The actual hard part is to clean up the authors field, because while there exists some standard forms, there is still a lot of free text going on. I tried to to this semi-automatically with a [script](https://github.com/schochastics/CRAN_collaboration/blob/main/Rscripts/helpers.R) which was very tideous and I am sure it is not perfect[^clean].
+The really hard part is to clean up the authors field. While there exists some standardized ways of entering author names into the DESCRIPTION file, it is still a wild west free-text field. I tried to to the cleaning semi-automatically with a [script](https://github.com/schochastics/CRAN_collaboration/blob/main/Rscripts/helpers.R) which was very tideous and I am sure it is not perfect[^clean].
 
 ```{r}
 #| label: clean-authors
@@ -59,9 +60,9 @@ author_pkg_cran <- author_cleaner(db) |>
 str(author_pkg_cran)
 ```
 
-## Building the network
+## The co-authorship network
 
-The code below is used to build the co-authorship network as a weighted network. The weight indicates, how many packages two developers have authored together.
+The code below is used to build the co-authorship network as a weighted network. The weight shows how many packages two developers have authored together.
 
 ```{r}
 #| label: cran-network
@@ -81,7 +82,7 @@ comps_cran <- components(auth_auth_net)
 comps_cran$no
 ```
 
-Thats quite a big number of components, which is not necessarily surprising. Many package authors (or teams of authors) have only ever worked on one package (more than 40% of all packages are actually single-authored) and thus never interacted with the broader R developer community on any other package. 
+Thats quite a big number of components but it is not really surprising. Many package authors (or teams of authors) have only ever worked on one package (actually more than 40% of all packages are single-authored) and thus never interacted with the broader R developer community on any other package. 
 
 The biggest component can be extracted with the `igraph::largest_component()`.
 
@@ -102,7 +103,7 @@ emax_who <- ends(auth_auth_net_largest, E(auth_auth_net_largest)[which.max(E(aut
 emax <- max(E(auth_auth_net_largest)$weight)
 ```
 
-On average, every developer has `r round(mean(degree(auth_auth_net_largest)),2)` co-authors. The median is `r median(degree(auth_auth_net_largest))`. 
+On average, every developer in the largest component has `r round(mean(degree(auth_auth_net_largest)),2)` co-authors. The median is `r median(degree(auth_auth_net_largest))`. 
 The two individuals who coauthored the most packages together (`r emax`), are `r emax_who[1]` and `r emax_who[2]`. The person with the most co-authors (`r max(degree(auth_auth_net_largest))`) is `r V(auth_auth_net_largest)$name[which.max(degree(auth_auth_net_largest))]`. What a great transition for the next section.
 
 ## Six Degrees of Hadley Wickham
@@ -157,7 +158,7 @@ To check your own Hadley number (if you are in the largest connected component, 
 
 ## The center of the collaboration network
 
-An interesting question one can ask here is who the center of the network is. That is, the person who has the smallest average distance to all other developers. The top ten developers in that regard are shown below. The full list can again be explored at the end of this post.
+Another interesting question in network analytic terms is who the center of the network is. The center is defined as the person who has the smallest average distance to all other developers. The top ten developers in that regard are shown below. The full list can again be explored at the end of this post.
 
 ```{r}
 #| echo: false
@@ -173,7 +174,7 @@ Surprise, surprise, it is Hadley again!
 
 ## Full results
 
-In the below table, you can search for your own Hadley number and where you rank in terms of centrality. 
+In the below table, you can search for your own Hadley number and where you rank in terms of centrality. If you find any mistakes please do let me know in the comments. 
 
 ```{r}
 #| label: reactable-hadley
