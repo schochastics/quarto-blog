@@ -45,12 +45,13 @@ str(db)
 source("helpers.R")
 ```
 
-The actual hard part is to clean up the authors field, because while there exists some standard forms, there is still a lot of free text going on. I tried to to this semi-automatically with a [script](https://github.com/schochastics/CRAN_collaboration/blob/main/Rscripts/helpers.R) which was very tideous and I am sure it is not perfect.
+The actual hard part is to clean up the authors field, because while there exists some standard forms, there is still a lot of free text going on. I tried to to this semi-automatically with a [script](https://github.com/schochastics/CRAN_collaboration/blob/main/Rscripts/helpers.R) which was very tideous and I am sure it is not perfect[^clean].
 
 ```{r}
 #| label: clean-authors
 #| cache: true
-author_pkg_cran <- author_cleaner(db)
+author_pkg_cran <- author_cleaner(db) |>
+    dplyr::filter(!authorsR %in% c("Posit Software", "R Core Team", "R Foundation", "Rstudio", "Company"))
 ```
 
 ```{r}
@@ -93,12 +94,23 @@ From the `r format(length(unique(author_pkg_cran$authorsR)),big.mark=",")` recor
 
 ![The biggest Component of the CRAN co-authorship network](https://github.com/schochastics/CRAN_collaboration/raw/main/figures/network.png)
 
-On average, every developer has `r mean(degree(auth_auth_net_largest))` co-authors. The median is `r median(degree(auth_auth_net_largest))`. The person with the most co-authors, namely `r max(degree(auth_auth_net_largest))`, is actually `r V(auth_auth_net_largest)$name[which.max(degree(auth_auth_net_largest))]`. What a great transition for the next section.
+On average, every developer has `r mean(degree(auth_auth_net_largest))` co-authors. The median is `r median(degree(auth_auth_net_largest))`. 
+
+```{r}
+#| label: emax
+#| echo: false
+emax_who <- ends(auth_auth_net_largest, E(auth_auth_net_largest)[which.max(E(auth_auth_net_largest)$weight)])[1, ]
+emax <- max(E(auth_auth_net_largest)$weight)
+```
+
+The two individuals who coauthored the most packages together, namely `r emax`, are `r emax_who[1]` and `r emax_who[2]`.
+
+The person with the most co-authors, namely `r max(degree(auth_auth_net_largest))`, is `r V(auth_auth_net_largest)$name[which.max(degree(auth_auth_net_largest))]`. What a great transition for the next section.
 
 ## Six Degrees of Hadley Wickham
 
 ```{r}
-#| label: hadley-number
+#| label: hadley-number-calc
 #| echo: false
 #| cache: true
 hadley_idx <- which(V(auth_auth_net_largest)$name == "Hadley Wickham")
@@ -107,6 +119,7 @@ author_tbl <- tibble(
     dist2HW = distances(auth_auth_net_largest, to = hadley_idx, weights = NA),
     cc = (1 / closeness(auth_auth_net_largest, weights = NA)) * 1 / vcount(auth_auth_net_largest)
 )
+
 ```
 
 If you are familiar with the [Erdős
@@ -167,6 +180,9 @@ Surprise, surprise, it is Hadley again!
 #| label: reactable-hadley
 #| echo: false
 
+author_tbl <- author_tbl |>
+    rename(`Hadley Number` = dist2HW, `centrality` = cc)
+
 options(reactable.theme = reactable::reactableTheme(
     color = "hsl(233, 9%, 87%)",
     backgroundColor = "hsl(233, 9%, 19%)",
@@ -182,13 +198,14 @@ options(reactable.theme = reactable::reactableTheme(
 reactable::reactable(author_tbl,
     filterable = TRUE,
     minRows = 10,
-    defaultSorted = list(dist2HW = "asc"),
+    defaultSorted = list(`Hadley Number` = "asc"),
     highlight = TRUE,
     striped = TRUE,
     showPageSizeOptions = TRUE
 )
 ```
 
+[^clean]: I did some extended cleaning which included removing companies such as "Posit Software".
 [^1]: My Erdős Number is 4
 [^2]: I love this type of numbers. On this blog I also introduced the [Zlatan number](http://blog.schochastics.net/posts/2018-09-28_six-degrees-of-zlatan-ibrahimovic/). 
 [^3]: My Hadley Number is 2
