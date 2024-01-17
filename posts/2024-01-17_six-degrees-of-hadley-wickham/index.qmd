@@ -22,19 +22,11 @@ library(netUtils)
 
 ## Getting the Data
 
-It is actually quite easy to get all metadata (and more!) of the DESCRIPTION files from CRAN. It is a single function call. 
+It is actually quite easy to get all metadata (and more!) of the DESCRIPTION files from CRAN. It is a single function call
 ```{r}
 #| label: get-cran-data
-#| eval: false
+#| eval: TRUE
 db <- tools::CRAN_package_db()
-str(db)
-```
-
-```{r}
-#| label: read-cran-data
-#| echo: false
-#| warning: false
-db <- read_csv("db_2024-01-13.csv")
 str(db)
 ```
 
