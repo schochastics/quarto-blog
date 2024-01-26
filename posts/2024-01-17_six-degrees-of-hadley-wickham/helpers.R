@@ -154,6 +154,7 @@ author_cleaner <- function(db) {
     # 	Csillery Katalin [aut], Lemaire Louisiane [aut], Francois Olivier [aut], Blum Michael [aut, cre]
     bip <- bip |>
         dplyr::mutate(authorsR = if_else(authorsR %in% c("Vincent A. Traag", "V.A. Traag", "Vincent Traag"), "Vincent A. Traag", authorsR)) |>
+        dplyr::mutate(authorsR = if_else(authorsR %in% c("Frank E. Harrell Jr", "Frank E Harrell Jr", "Frank Harrell Jr"), "Frank Harrell", authorsR)) |>
         dplyr::mutate(authorsR = if_else(authorsR == "Csillery Katalin", "Katalin Csillery", authorsR)) |>
         dplyr::mutate(authorsR = if_else(authorsR == "Lemaire Louisiane", "Louisiane Lemaire", authorsR)) |>
         dplyr::mutate(authorsR = if_else(authorsR == "Francois Olivier", "Olivier Francois", authorsR)) |>

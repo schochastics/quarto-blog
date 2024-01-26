@@ -42,7 +42,6 @@ The really hard part is to clean up the authors field. While there exists some s
 
 ```{r}
 #| label: clean-authors
-#| cache: true
 author_pkg_cran <- author_cleaner(db) |>
     dplyr::filter(!authorsR %in% c("Posit Software", "R Core Team", "R Foundation", "Rstudio", "Company"))
 ```
@@ -103,7 +102,6 @@ The two individuals who coauthored the most packages together (`r emax`), are `r
 ```{r}
 #| label: hadley-number-calc
 #| echo: false
-#| cache: true
 hadley_idx <- which(V(auth_auth_net_largest)$name == "Hadley Wickham")
 author_tbl <- tibble(
     name = V(auth_auth_net_largest)$name,
