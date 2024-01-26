@@ -1,0 +1,121 @@
+---
+title: "A new graphlayouts release and an update on edgebundle"
+subtitle: "with some thoughts on package development"
+author:
+  - name: David Schoch
+    orcid: 0000-0003-2952-4812
+date: 2024-01-26
+categories: [R, networks, package]
+---
+```{r}
+#| label: prepare
+#| echo: false
+url2raw <- function(url) {
+    raw_url <- sub("https://github.com", "https://raw.githubusercontent.com", url)
+    raw_url <- sub("blob/", "", raw_url)
+    sub("#.*$", "", raw_url)
+}
+parse_selection <- function(url) {
+    lines <- adaR::ada_get_hash(url)
+    lines <- gsub("#|L", "", lines)
+    lines <- gsub("-", ":", lines)
+    lines <- eval(parse(text = lines))
+    code <- readLines(url2raw(url))
+    cat("````r", code[lines], "````", sep = "\n")
+    # code[lines]
+}
+```
+
+Last week, a new version of the R package [graphlayouts](https://github.com/schochastics/graphlayouts) was released on CRAN.
+While I will walk through the (minor) updates, I also want to talk about the ups and downs of package maintenance. I am developing 
+packages since 2017, but only when I started to develop packages with my colleague [Chung-hong Chan](https://chainsawriot.com/), I began to develop more of a "Software Developer" mindset instead of making stuff up as I went[^1]. I also began reading up on (Open Source) software development ([Working in Public: The Making and Maintenance of Open Source Software](https://www.amazon.de/dp/0578675862?psc=1&ref=ppx_yo2ov_dt_b_product_details), [A Philosophy of Software Design](https://www.amazon.de/dp/173210221X?psc=1&ref=ppx_yo2ov_dt_b_product_details), [Pragmatic Programmer, The: Your journey to mastery](https://www.amazon.de/dp/0135957052?psc=1&ref=ppx_yo2ov_dt_b_product_details), and [uncurled](https://un.curl.dev/) to name a few highlights) which taught me a lot on how to develop more efficiently and also how underestimated (and hard) maintenance of software can be.
+
+## Maintaining an R package
+
+![](bus-rpkg.jpg)
+
+Developing an R package from scratch is fun. There are great resources on how to create R packages and a lot of packages that support the development by "automating the boring stuff". [devtools](https://devtools.r-lib.org/), [usethis](https://usethis.r-lib.org/) and [roxygen2](https://roxygen2.r-lib.org/) are absolute game changers in that regard and help to set up the package structure and supporting documentation. 
+
+I guess ["Writing R Extensions"](https://cran.r-project.org/doc/manuals/R-exts.html) from the R Core team is the most official and comprehensive manual for writing packages. I usually need to consult it for obscure issues or questions that I have. More accessible (but less comprehensive) is the book ["R Packages (2e)"](https://r-pkgs.org/) from Hadley Wickham and Jenny Bryan. Besides these official resources, the R community has produced a great variety of amazing material around package development. Many of these are summarized in a [list by Maëlle Salmon](https://rpkgdev-mechanics.netlify.app/resources/). 
+
+>Running a successful open source project is just Good Will Hunting in reverse, where you start out as a respected genius and end up being a janitor who gets into fights."  
+
+I really love this quote by Byrne Hobart since it captures the reality of open source development, hence also R packages, quite well. You have a great idea for a package, you implement it with great enthusiasm, and when it is done you proudly post a "new package alert" on social media. The likes are flying in and you feel great. If you are an academic like me, then up to this point it is pretty much the same as with papers. But while the story ends here for papers [^2], the maintenance grind only begins for packages. This task is far less rewarding since for the most part you are only fixing bugs, rewrite some code here and there[^3], and update dependencies. Nothing that allows for hunting likes on social media. But if you are serious about your packages, it is a job that you should not ignore. The thing is, you can twist and turn it as you want but maintenance will for the most part be tedious work. To make it less of an uphill battle, there are some principles you can try to follow during a development phase that will make maintenance significantly easier in the future. One such principle I encountered while doing some maintenance tasks for my graphlayouts package. 
+
+## Maintaining graphlayouts
+
+Thanks to its integration in [ggraph](https://github.com/thomasp85/ggraph), graphlayouts is quite successful in terms of downloads. But this also means that it is quite important to properly maintain the package. My newly acquired software developer mindset made it clear to me, that the package suffers from a severe [feature creep](https://en.wikipedia.org/wiki/Feature_creep). In the past, I just kept adding new layout algorithms blindly and independently from existing algorithms in the package. This has lead to an extreme violation of [DRY (Don't repeat yourself)](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself), in both R and C++ code. What it means is that I have a lot of code copy and pasted at different places. So for example, almost every function had the following checks at the beginning: 
+
+```r
+if (!igraph::is_igraph(g)) {
+    stop("g must be an igraph object", call. = FALSE)
+}
+```
+
+```r
+if (!igraph::is_connected(g, mode = "weak")) {
+    stop("only connected graphs are supported", call. = FALSE)
+}
+```
+
+Why is this bad? Imagine I decide to change the error message to `"g should be an igraph object"`. I would need to find all instances of the snippet and replace must with should. That is not very maintenance friendly. What I did in this new release is to encapsulate these checks in helper functions which are called instead. 
+
+```r
+ensure_igraph <- function(g) {
+    if (!igraph::is_igraph(g)) {
+        stop("g must be an igraph object", call. = FALSE)
+    }
+}
+
+ensure_connected <- function(g) {
+    if (!igraph::is_connected(g, mode = "weak")) {
+        stop("only connected graphs are supported.", call. = FALSE)
+    }
+}
+```
+
+This clearly makes maintenance easier, since I can now make changes at one point and don't need to worry about others.
+I tried to remove as many of these type of violations in my R code and streamline them in helper functions. This will make future maintenance 
+less complex. 
+
+But there is still a lot to do in that regard, especially in the C++ code. Here is a function in [stress.cpp](https://github.com/schochastics/graphlayouts/blob/main/src/stress.cpp)
+```{r}
+#| echo: false
+#| output: asis
+#| warning: false
+url <- "https://github.com/schochastics/graphlayouts/blob/main/src/stress.cpp#L5-L16"
+parse_selection(url)
+```
+and here in [constrained_stress.cpp](https://github.com/schochastics/graphlayouts/blob/main/src/constrained_stress.cpp)
+```{r}
+#| echo: false
+#| output: asis
+#| warning: false
+url <- "https://github.com/schochastics/graphlayouts/blob/main/src/constrained_stress.cpp#L5-L16"
+parse_selection(url)
+```
+
+Clearly there is no difference and there should not be two such functions. I left these DRY violations for the next version, because this will be a bigger task and I need to learn a bit more on header files. While we are at C++ code in R: [This](https://chainsawriot.com/postmannheim/2023/10/01/cppqa.html) is a great post on the topic by my colleague Chung-hong Chan.
+
+## New features in graphlayouts 1.1.0
+
+I was talking about graphlayouts suffering from feature creep, and here we are introducing new layout algorithms I implemented in 1.1.0. 
+To my defense, there are "only" two and there were good reasons to include them. The first one, `layout_with_fixed_coords()` allows to include a partial matrix of coordinates that should be fixed in the layout. It is a generalization of `layout_with_constrained_stress()` which allows to fix either all x or all y coordinates. I will eventually deprecate the latter function in favor of the former. 
+
+The second is `layout_as_metromap()`, which allows to draw a graph in the style of a metro map.
+
+![](https://github.com/schochastics/edgebundle/blob/main/man/figures/metro_berlin.png?raw=true)
+
+If this sounds familiar, then you might be a user of [edgebundle](https://github.com/schochastics/edgebundle), a package primarily focused around non-hierarchical bundling of edges in graphs. 
+
+## The status of edgebundle
+
+I migrated the metro map algorithm to graphlayouts for two reasons. First, it was kind of badly placed in the package and given that it is a layout algorithm, it fits far better to graphlayouts. But I wouldn't have thought of that if it wasn't for movement in a [three year old issue](https://github.com/thomasp85/ggraph/issues/267) of ggraph. Said issue was actually the birthplace of the package edgebundle. [@psimm](https://github.com/psimm) was suggesting force-directed edgebundling as a new feature. I actually did implement it at as a new `geom_edge_` shortly after but did not finish it because I had troubles with the ggproto stuff. So instead, I reimplemented it in a way that made it usable outside of ggraph. And with that, the package edgebundle was born. For three years I maintained the package, adding some more bundling techniques and [flow maps](https://github.com/schochastics/edgebundle/#flow-maps).[^4] But a few weeks back, there was suddenly movement in the original issue. One thing let to another, and there finally was the [edgebundling pull request](https://github.com/thomasp85/ggraph/pull/356) which introduces edge bundling geoms to the upcoming version of ggraph ([2.2.0](https://github.com/thomasp85/ggraph/issues/358)). 
+
+The edgebundle package was always meant as a package that only lives as long as edge bundling is not introduced to ggraph. However, it has since then grown beyond bundling techniques. Still, I want to deprecate this package in the future, which is the second reason to move the metro map layout. 
+Once the flow maps are implemented in ggraph, there is no reason anymore for edgebundle to exist and I will probably stop maintaining it.
+
+[^1]: I still do but at least I am making stuff up in an educated way.
+[^2]: Besides looking at those sweet sweet citations coming in, giving you an edge in arbitrary metrics.
+[^3]: The correct term is refactoring.
+[^4]: My motivation for this was to recreate some of the amazing work by [Minard](https://www.mr.schochastics.net/material/minard/). You know, the dude who according to E. Tufte created “the best statistical graphic ever drawn”.
