@@ -1,0 +1,113 @@
+---
+title: "Be kind don't rbind"
+author:
+  - name: David Schoch
+    orcid: 0000-0003-2952-4812
+date: 2024-02-13
+categories: [R]
+---
+
+The other day I was helping to refactor an R package and came across one
+of the biggest performance blockers there is: dynamically growing matrices.
+Of course I repeated the mantra "Always preallocate your variables" but in this case,
+it is not clear how big (in terms of rows) the final matrix will be. So there is no
+way around growing the matrix dynamically. 
+
+The chosen approach in the package was to use `rbind` similar to this
+
+```r
+mat <- vector()
+while(<condition>) {
+    if(<condition>) {
+        tmp <- <do calculation>
+        mat <- rbind(mat, tmp)
+    }
+}
+```
+
+Disregarding performance, this seems like a sensible approach. Just add new rows to the end of the matrix. But a little bit of profiling showed that this was an extreme bottleneck in the function it appears. So what are viable alternatives? let's benchmark some solutions. 
+
+As a baseline we implement a function that preallocates memory. 
+
+```{r}
+fmat <- function(n) {
+    res <- matrix(NA, n, n)
+    for (i in 1:n) {
+        res[i, ] <- runif(n)
+    }
+    res
+}
+```
+
+The first contender is the `rbind` approach.
+
+```{r}
+frbind <- function(n) {
+    res <- vector()
+    for (i in 1:n) {
+        res <- rbind(res, runif(n))
+    }
+    res
+}
+```
+
+For the second approach, we try to reduce the number of rbinds by growing the final matrix in chunks. For `csize = 1` we obtain `frbind()` and `csize = n` we have `fmat()`.
+
+```{r}
+fchunks <- function(n, csize = 10) {
+    chunk <- matrix(NA, csize, n)
+    res <- vector()
+    for (i in 1:n) {
+        if (i %% csize == 0) {
+            chunk[csize, ] <- runif(n)
+            res <- rbind(res, chunk)
+            chunk <- matrix(NA, csize, n)
+        } else {
+            chunk[i %% csize, ] <- runif(n)
+        }
+    }
+    res[!is.na(res[, 1]), ]
+}
+```
+
+The last approach is to grow list which is converted to a matrix at the end.
+
+```{r}
+flist <- function(n) {
+    res <- list()
+    for (i in 1:n) {
+        res[[length(res) + 1]] <- runif(n)
+    }
+    do.call(rbind, res)
+}
+```
+
+
+```{r}
+n <- 1000
+bench <- microbenchmark::microbenchmark(
+    fmat(n),
+    frbind(n),
+    fchunks(n, csize = 10),
+    flist(n),
+    times = 1, unit = "ms"
+)
+```
+
+
+```{r}
+#| echo: false
+rmr <- function(res, order = "median") {
+    stopifnot("Argument 'res' must be a 'microbenchmark' result" = inherits(res, "microbenchmark"))
+
+    smry <- summary(res)
+    res$expr <- factor(res$expr,
+        levels = levels(res$expr)[order(smry[["median"]])],
+        ordered = TRUE
+    )
+    res
+}
+knitr::kable(summary(rmr(bench)))
+```
+
+The performance of the `rbind` approach is really terrifyingly bad. The list approach on the other hand is extremely efficient. It performs equally well as the preallocated matrix approach. I unfortunately lack the understanding of the R internals here, but it seems as if dynamically growing a list does not have any (or at least not much) overhead.
