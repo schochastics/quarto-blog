@@ -25,7 +25,7 @@ while(<condition>) {
 }
 ```
 
-Disregarding performance, this seems like a sensible approach. Just add new rows to the end of the matrix. But a little bit of profiling showed that this was an extreme bottleneck in the function it appears. So what are viable alternatives? let's benchmark some solutions. 
+Disregarding performance, this seems like a sensible approach. Just add new rows to the end of the matrix. But a little bit of profiling showed that this was an extreme bottleneck in the function it appears. So what are viable alternatives? let's benchmark some solutions. Note that we assume to know `n` here but in reality, we do not know how big it will be at the end.
 
 As a baseline we implement a function that preallocates memory. 
 
@@ -116,7 +116,6 @@ The performance of the `rbind` approach is really terrifyingly bad. The list app
 
 [Lluís Revilla](https://fosstodon.org/@Lluis_Revilla/111923091333392166) suggested that `cbind` might be more efficient than `rbind`, given that R mostly deals in columns.
 
-more yext more
 ```{r}
 fcbind <- function(n) {
     res <- vector()
@@ -145,4 +144,4 @@ bench <- microbenchmark::microbenchmark(
 knitr::kable(summary(rmr(bench)))
 ```
 
-So `cbind` is indeed a lot faster than `rbind`, but still amuch worse than the `list` approach.
+So `cbind` is indeed a lot faster than `rbind`, but still much worse than the `list` approach.
