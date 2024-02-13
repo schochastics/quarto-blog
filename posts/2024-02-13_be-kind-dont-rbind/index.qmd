@@ -111,3 +111,38 @@ knitr::kable(summary(rmr(bench)))
 ```
 
 The performance of the `rbind` approach is really terrifyingly bad. The list approach on the other hand is extremely efficient. It performs equally well as the preallocated matrix approach. I unfortunately lack the understanding of the R internals here, but it seems as if dynamically growing a list does not have any (or at least not much) overhead.
+
+**Update**  
+
+[Lluís Revilla](https://fosstodon.org/@Lluis_Revilla/111923091333392166) suggested that `cbind` might be more efficient than `rbind`, given that R mostly deals in columns.
+
+more yext more
+```{r}
+fcbind <- function(n) {
+    res <- vector()
+    for (i in 1:n) {
+        res <- cbind(res, runif(n))
+    }
+    t(res)
+}
+```
+
+
+```{r}
+n <- 1000
+bench <- microbenchmark::microbenchmark(
+    fmat(n),
+    frbind(n),
+    fcbind(n),
+    fchunks(n, csize = 10),
+    flist(n),
+    times = 1, unit = "ms"
+)
+```
+
+```{r}
+#| echo: false
+knitr::kable(summary(rmr(bench)))
+```
+
+So `cbind` is indeed a lot faster than `rbind`, but still amuch worse than the `list` approach.
