@@ -145,3 +145,38 @@ knitr::kable(summary(rmr(bench)))
 ```
 
 So `cbind` is indeed a lot faster than `rbind`, but still much worse than the `list` approach.
+
+
+```{r}
+#| include: false
+#| eval: false
+
+Rcpp::cppFunction(
+    "
+    NumericMatrix frbind_cpp(int numIterations) {
+    std::vector<NumericVector> rows;
+
+    // Assuming numIterations determines how many times you want to add a new row
+    for(int i = 0; i < numIterations; i++) {
+        // Simulate generating a new row, the size of the row (n) is dynamically determined here
+        // For illustration, we use runif(5) to generate 5 random numbers
+        // In practice, the size and content of each row could vary based on your application's logic
+        NumericVector newRow = runif(5);
+        rows.push_back(newRow);
+    }
+
+    // Now, convert the std::vector of NumericVectors into a NumericMatrix
+    int numRows = rows.size();
+    int numCols = rows[0].size(); // Assuming all rows have the same length
+    NumericMatrix res(numRows, numCols);
+
+    for (int i = 0; i < numRows; i++) {
+        res.row(i) = rows[i];
+    }
+
+    return res;
+    }
+    "
+)
+
+```
