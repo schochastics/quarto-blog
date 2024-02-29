@@ -1,5 +1,5 @@
 ---
-title: "chronos: A fast general purpose datetime parser"
+title: "timeless: A fast general purpose datetime parser"
 author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
@@ -7,10 +7,13 @@ date: 2024-02-27
 categories: [R, package, Rust]
 ---
 
-**Update**:  
+**Update II**: 
+**The package was renamed from `chronos` to `timeless` due to a name clash with a Biocundoctor package.**
+
+**Update I**:  
 *The code of this post was rerun 2024-02-28 after a small [performance boost](https://github.com/schochastics/chronos/issues/13) was implemented.*
 
-This post introduces the R package [chronos](https://github.com/schochastics/chronos/), a fast general purpose date/time converter written in Rust with crates [dateparser](https://crates.io/crates/dateparser) and [chrono](https://crates.io/crates/chrono). This is the second outcome of my adventure of [learning Rust](http://blog.schochastics.net/posts/2024-02-23_parsing-phone-numbers-with-rust-and-r/).[^1] 
+This post introduces the R package [timeless](https://github.com/schochastics/timeless/), a fast general purpose date/time converter written in Rust with crates [dateparser](https://crates.io/crates/dateparser) and [chrono](https://crates.io/crates/chrono). This is the second outcome of my adventure of [learning Rust](http://blog.schochastics.net/posts/2024-02-23_parsing-phone-numbers-with-rust-and-r/).[^1] 
 
 The package essentially does what [anytime](https://github.com/eddelbuettel/anytime) does, but it appears to do so a bit more efficiently.
 
@@ -18,22 +21,22 @@ The package essentially does what [anytime](https://github.com/eddelbuettel/anyt
 
 ## Installation
 
-You can install the development version of chronos like so:
+You can install the development version of timeless like so:
 
 ``` r
-remotes::install_github("schochastics/chronos")
+remotes::install_github("schochastics/timeless")
 #or
-pak::pak("schochastics/chronos")
+pak::pak("schochastics/timeless")
 ```
 
 
 ```{r}
-library(chronos)
+library(timeless)
 ```
 
 ## Formats
 
-chronos understands many different date(time) formats out of the box. A subset is included as a small benchmark dataset.
+`timeless` understands many different date(time) formats out of the box. A subset is included as a small benchmark dataset.
 ```{r}
 bench_date
 ```
@@ -64,7 +67,7 @@ library(anytime)
 
 [anytime](https://github.com/eddelbuettel/anytime) is certainly the most accepted general purpose date(time) converter to date.
 
-It does not recognize all accepted formats of chronos out of the box. However, the unrecognized formats can easily be added via `anytime::addFormats()`.
+It does not recognize all accepted formats of `timeless` out of the box. However, the unrecognized formats can easily be added via `anytime::addFormats()`.
 ```{r}
 dplyr::coalesce(
     anytime(bench_date),
@@ -72,7 +75,7 @@ dplyr::coalesce(
 )
 ```
 
-The full list of formats supported can be retrieved with `anytime::getFormats()`. `chronos` implements all these formats natively too.
+The full list of formats supported can be retrieved with `anytime::getFormats()`. `timeless` implements all these formats natively too.
 
 ## Benchmark
 
@@ -118,7 +121,7 @@ When epoch times are encoded as characters (which happens when all data is put t
 
 ## Runtime
 
-The package [fasttime](https://github.com/s-u/fasttime) can be used together with chronos to convert larger sets of datetimes by letting chronos return a character vector which is then parsed by `fastPOSIXct` or `fastDate`.
+The package [fasttime](https://github.com/s-u/fasttime) can be used together with `timeless` to convert larger sets of datetimes by letting chronos return a character vector which is then parsed by `fastPOSIXct` or `fastDate`.
 ```{r}
 #| label: fast_chronos
 
@@ -186,7 +189,7 @@ ggplot2::autoplot(mb)
 ```
 
 ## Disclaimer
-While it might seem that `chronos` has an edge over `anytime`, it is far less battle tested and
+While it might seem that `timeless` has an edge over `anytime`, it is far less battle tested and
 mature (Date parsing can be as tricky as [URL parsing](http://blog.schochastics.net/posts/2023-10-01_adar-an-accurate-fast-and-whatwg-compliant-url-parser/)). I am grateful for anyone who can take the package for a spin and report issues/make feature requests.
 
 
