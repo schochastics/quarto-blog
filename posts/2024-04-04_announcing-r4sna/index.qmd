@@ -1,0 +1,54 @@
+---
+title: "Book announcement R 4 Social Network Analysis"
+author:
+  - name: David Schoch
+    orcid: 0000-0003-2952-4812
+date: 2024-04-04
+categories: [R, networks]
+---
+
+I am very excited to announce the project "R 4 Social Network Analysis" ([R4SNA](https://schochastics.github.io/R4SNA/)), an introductory book for individuals who want to get started with SNA in R. This blog post is supposed to answer some basic questions around the project and its (non-existent) timeline.
+
+## Why?
+
+While there is free, [as in beer](https://en.wiktionary.org/wiki/free_as_in_beer), material available online to get started with SNA, it is quite scattered and unfortunately much of it is very outdated. The former is not surprising given that Social Network Analysis spans so many different fields in the Social Sciences. The use of R is growing in the community, but there is still a majority of individuals who use other tools such as [UCINET](https://sites.google.com/site/ucinetsoftware/home), [Pajek](http://mrvar.fdv.uni-lj.si/pajek/), or [visone](https://visone.info/). Many high quality workshops are taught at academic conferences of elsewhere but that material is not always freely available or useful for self study.
+
+The goal of this book is to gather the most important topics in SNA and provide guidance on how to work on these topics in R. 
+
+## Who?
+
+*Who, as in "Who writes this book?"*. The book is written by me and [Termeh Shafie](http://mrs.schochastics.net/), my wife. We both maintain quite a few R packages related to SNA and have given several workshops around the topic. Termeh also regularly teaches undergraduate and postgraduate courses on SNA. This is a huge passion project for us since we both love R, SNA, and teaching others the way of SNA with R. 
+
+*Who, as in "Who is this book for?"*. The book is supposed to be very hands-on. We will talk a bit about underlying (social) theories, but the focus is more on how to use specific network analytic tools in R. So if you are interested in the theoretical aspects, you will probably be better of with a proper textbook. R4SNA is meant for practitioners who want/need to get their hands dirty from the start. Readers should get an overview of the R ecosystem for SNA and be able to manage standard network analytical tasks (and beyond) after reading the book.
+
+## What?
+
+As I said above, the goal of the book is to gather the most important topics in SNA in one place. "Important" is of course very subjective and it is not clear how to draw the line of what should be included and what not. We will start with the low hanging fruits, meaning repurposing our own material. That is, material from our workshops and courses (for instance what is already available 
+[here](https://www.mr.schochastics.net/material/)). This should cover the most generally relevant topics in SNA. Everything beyond that will be added over time as we (or the community!) deems necessary.
+
+The outline of the book is not really fixed and the content is bound to change a lot over the next few months. We plan to have at least for parts:
+
+- Descriptive Network Analysis
+- Network Visualization
+- Inferential Network Analysis
+- Tidy Network Analysis
+
+**Descriptive Network Analysis** will cover all the basics (network statistics, centrality, clustering) and specific network structures such as two-mode, signed, and ego networks.
+
+**Network Visualization** should be self-explanatory. 
+
+**Inferential Network Analysis** is the expert area of Termeh and all I can say is that it will definitely cover topics such as exponential random graph models and actor oriented models. 
+
+**Tidy Network Analysis** will not teach anything new topicwise, but rather introduce a tidy way to to network analysis in R.
+
+
+## When?
+
+This book is just a "fun" side project for us. We neither have funding, nor extra time to set aside to work on this project. Thats why there is (at least not at the moment) any deadline for when the book is supposed to be finished. We had the idea of writing this book for a while and this announcement post is also meant to give us some motivation to actually work on it from time to time.     
+
+## Where?
+
+The book is being written openly in this
+[GitHub repository](https://github.com/schochastics/R4sna) and a [preview](https://schochastics.github.io/R4SNA/) is rendered with each push. We are using [quarto](https://quarto.org/) as our publishing system. 
+
+Given that we write the book on GitHub, we of course also welcome contributions. For now, however, we would like to keep it in terms of (friendly) suggestions via GitHub issues. Please do not submit unsolicited PRs because this will increase our workload too much in the current state. We certainly invite this type of contributions later but not at this early stage.
