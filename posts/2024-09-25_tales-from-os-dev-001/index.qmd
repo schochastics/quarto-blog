@@ -1,0 +1,118 @@
+---
+title: "Tales from Open Source Development I: Your package is archived"
+author:
+  - name: David Schoch
+    orcid: 0000-0003-2952-4812
+date: 2024-09-25
+categories: [R, package, devtales]
+---
+
+Most of the posts on this blog include a lot of code an little text besides explaining what the code does. Although I "write for a living" (scientific papers and stuff), I am not a big fan of producing walls of text. "A line of code says more than a thousand words", you know... 
+
+I want to fight those demons though and for that reason, I decided to add a non-code (yet R related) series of posts to this blog. The purpose of these posts will be to shine some light on "behind the scene" activities around R package development which are mostly invisible to users, not always fun, but nevertheless necessary.
+
+![](bus-rpkg.jpg){fig-align="center"}
+
+The first part of the series is about the recent archival of my R package [timeless](https://github.com/schochastics/timeless) due to not complying with CRAN policies. Having a package archived on CRAN essentially means that you cannot install it via
+
+```r
+install.packages("timeless")
+```
+
+anymore. This is not the end of the world, but not everybody might know how to install the package regardless of the archival and in worst case it might create a sense of distrust. In reality, though, the reasons for archival of a package are usually quite benign, even when the reason sounds harsh, like in my case.
+
+
+## The R package timeless
+
+![](../2024-02-27_chronos-fast-general-purpose-datetime-converter/logo.png){width=200 fig-align="center"}
+
+I introduced [timeless](https://blog.schochastics.net/posts/2024-02-27_chronos-fast-general-purpose-datetime-converter/) package on this blog not to long ago. I created it when I was trying to learn and experiment with Rust. timeless is a fast general purpose date/time converter similar to [anytime](https://github.com/eddelbuettel/anytime). It turned out to be quite a bit faster than anytime, yet I would still consider anytime to be more robust than timeless. Dates and times can be horribly complex to parse. 
+
+## The "about to be archived" email
+
+End of August, I received one of those scary CRAN emails about a package being on the short list to be archived. [^1]
+
+
+[^1]: If you are interested, there exists a [dashboard](https://www.cranhaven.org/dashboard-at-risk.html) that keeps track of all packages currently being threatened to be archived. 
+
+>The 'Using Rust' part of the policy says
+>
+>"Please report the version of rustc used (as R does for C, C++ and
+>Fortran compilers) in the installation log especially if compilation
+>fails, so best reported before starting compilation (as R does)."
+>
+>The 'especially' part was added from bitter experience of no version
+>being reported on installation failure.
+>
+>On our check runs
+>[redacted]
+>did not report a version, and
+>
+>[redacted] timeless
+>
+>only reported after a successful compilation.
+>
+>Please correct before 2024-09-06 to safely retain the package on CRAN.
+
+I was confused by the mail. I understood that I need to report the version of Rust used, which I apparently do, but only after successful compilation. I consulted the CRAN [Rust policy](https://cran.r-project.org/web/packages/using_rust.html) to gain a better understanding. The following gave a specific instruction for the DESCRIPTION file.
+
+>The package should declare
+>
+>SystemRequirements: Cargo (Rust's package manager), rustc
+>
+>as they can be packaged separately, and can have different versions. So state carefully any version requirement
+
+I naïvely thought I just need to add the version of Rust to the SystemRequirements field in the DESCRIPTION file.
+
+```
+SystemRequirements: Cargo (Rust's package manager), rustc (>= 1.67.1)
+```
+
+Without giving it further thought I submitted the new version to CRAN and quickly received the magical words
+
+> Thanks, on its way to CRAN.
+
+
+So I thought I fixed the issue and moved on. 
+
+A few days after the archival deadline I randomly ended up on the CRAN landing page of timeless, just to find out that the 
+package was indeed archived. The stated reason was 
+
+```
+Archived on 2024-09-11 for policy violations. 
+```
+
+This actually does sound bad, like I actively refused to follow CRAN policies. I was quite surprised about this  because there were no reminders or messages that the package was archived. 
+
+Obviously my fix was not enough (It always felt a bit too simple anyway). I decided to not pursue this to the bitter end and let the package live on GitHub only for now. But still, I was curious how to actually solve this. For that, I needed to look into the basics of Rust code in R packages again.
+
+## Using Rust in R packages and the root of the issue
+
+To call rust code in R (packages), you should install the [rextendr](https://github.com/extendr/rextendr) package. 
+Setting up a package to call Rust is then super easy.
+
+```r
+library(rextendr)
+usethis::create_package("myrustpkg")
+rextendr::use_extendr()
+```
+
+`use_extendr()` sets up everything necessary in your package to call Rust. Now you "just" need to write the Rust code.
+
+Here is where I went wrong when I was trying to fix the issue of timeless. I only consulted the CRAN policies and cried at [social media](https://fosstodon.org/@schochastics/113012893619800950) for help. What I should have done is ask the maintainers of rextendr for guidance.
+I only did so [when it was too late](https://github.com/extendr/rextendr/issues/362#issuecomment-2353734456). The maintainers were obviously well aware of the issue and have been [discussing](https://github.com/extendr/extendr/discussions/830) a solution.
+
+To not violate CRAN policies, the used Rust version for compilation needs to be visible in the install logfile like in the example below.
+
+![](install_log.png)
+
+I was thinking of trying to implement a hacky solution for myself, but quickly decided that I can wait until a fix is available in the rextendr package on CRAN. Until then, timeless will remain on GitHub only. 
+
+## Aftermath
+
+There was some [discussion](https://fosstodon.org/@schochastics/113148755827598485) afterwards about whether or not CRAN should communicate 
+such decisions earlier and better. Personally, I would prefer to get one email too much rather than one to little, but I also see that constant (potentially false negative) reminders can also be annoying for maintainers. Ultimately, it should of course be the task of package maintainers to keep an eye on potential issues, but a little more support would be great. For my own purposes, I have built a [dashboard](https://schochastics.github.io/gh-dashboard/) ([Code](https://github.com/schochastics/gh-dashboard)) which updates ones a week via GitHub Actions. The dashboard gives me a quick overview of activity on GitHub and current check results of packages on CRAN. That way, I see if I need to react to anything.
+
+![](dashboard.png)
+
+See the red errors for [graphlayouts](https://github.com/schochastics/graphlayouts)? that'll be the topic of the next post in this series.
