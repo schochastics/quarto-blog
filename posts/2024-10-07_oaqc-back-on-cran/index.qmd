@@ -1,0 +1,47 @@
+---
+title: "oaqc: Orbit aware quad census package back on CRAN"
+author:
+  - name: David Schoch
+    orcid: 0000-0003-2952-4812
+date: 2024-10-07
+categories: [R, package, networks]
+---
+
+This is just a short announcement post that the R package oaqc is back on CRAN.
+
+The package provides an efficient algorithm to calculate for a given graph the orbit-aware quad census. More precisely the frequency distribution of all induced and non-induced non-isomorphic four node subgraphs, i.e. quads, on a node and edge level; see the figure below for the relation between orbit and quad.
+
+![](quad_census.svg){fig-align="center"}
+
+The package was archived because the original authors were not reachable anymore. I tracked them down and got their permission to maintain the package.
+
+The new GitHub repository is <https://github.com/schochastics/oaqc>. Most importantly, the package now also has a hexsticker
+
+![](logo.png){fig-align="center"}
+
+Below is a short example for how to use the package.
+
+## Input
+
+The input can either be an edgelist (matrix or data.frame) or a graph Object ('igraph')
+
+Despite the input format the graph should not contain loops 
+or multi-edges and the vertex indices have to lie in range 
+[0,n-1) with n denoting the number of vertices in the graph. 
+Note that if the smallest index is 1 the algorithm will create
+an isolated vertex with index 0.
+
+## Calculating the orbit-aware quad census
+
+The following code exemplifies the use of this package.
+
+```{r}
+library(oaqc)
+### k4, pure R
+k4 <- data.frame(
+    source = c(0, 0, 0, 1, 1, 2),
+    target = c(1, 2, 3, 2, 3, 3)
+)
+k4orbits <- oaqc(k4, non_ind_freq = FALSE, file = "")
+k4orbits
+```
