@@ -1,0 +1,87 @@
+---
+title: "Tales from Open Source Development II: A package you depend on is archived"
+author:
+  - name: David Schoch
+    orcid: 0000-0003-2952-4812
+date: 2024-10-10
+categories: [R, package, devtales]
+---
+
+This is the second post about some "behind the scene" activities around R package development.
+[The first part](https://blog.schochastics.net/posts/2024-09-25_tales-from-os-dev-001/index.html) of the series was about the recent archival of my R package [timeless](https://github.com/schochastics/timeless). This second part is about the consequences for your own packages, if a package you have under "Imports" or "Suggests" in your DESCRIPTION file is archived. 
+
+## The archival of oaqc
+
+Just when the problems around `timeless` were resolved, I got yet another email from CRAN.
+
+>Dear maintainer,
+>
+>Please see the problems shown on
+><https://cran.r-project.org/web/checks/check_results_graphlayouts.html>.
+>
+>Please correct before 2024-10-07 to safely retain your package on CRAN.
+>
+>Do remmber to look at any 'Additional issues'
+>
+>Packages in Suggests should be used conditionally: see 'Writing R Extensions'.
+>This needs to be corrected even if the missing package(s) become available.
+>It can be tested by checking with _R_CHECK_DEPENDS_ONLY_=true.
+>
+>The CRAN Team
+
+The displayed error was something along the lines
+
+```
+Package oaqc not found
+```
+
+I found out that the package was archived, because the authors email address was not valid anymore.
+
+## Consequence for graphlayouts
+
+The `oaqc` package is suggested in [graphlayouts](https://github.com/schochastics/graphlayouts), the most widely used package of all the packages I maintain. It is also imported in [ggraph](https://CRAN.R-project.org/package=ggraph). So I had a slight panic attack because I was not sure how to go about fixing this. It seemed like taking over the maintainership of the `oaqc` package seemed the best long term solution. My short term fix was to port the relevant code to the `graphlayouts` so that it at least remains on CRAN, giving me time to fix the underlying issue. 
+
+I reached out to [mastodon](https://fosstodon.org/@schochastics/113191145089648950) to ask for the correct procedure. It turns out that you do at least have to try to contact the old maintainers and get their approval to take over authorship. Luckily, the maintainers of `oaqc` are old PhD colleagues of mine and I reconnected on LinkedIn (of all places...). I got their approval, [fixed some issues](https://github.com/schochastics/oaqc) and resubmitted to CRAN.
+
+## Aftermath
+
+This incident got me thinking about a hypothetical scenario:  
+
+**What if noone would ever fix the issues reported on CRAN and packages are archived?**
+
+The interesting part of this thought experiment is, what happened to me: Archiving one package,
+might trigger the "at risk" status of another, namely if it imports (or
+suggests) the archived package. If these packages also do not fix this issue,
+they also will be archived and yet again trigger a new wave of "at risk" packages.
+Eventually, this chain reaction will lead to the situation where only a few
+packages are left that do not import/suggest others. 
+
+So I created the [CRAN doomsday clock](https://schochastics.github.io/cran-doomsday/) which calculates 
+when the point in time is reached where CRAN only contains dependency free packages, 
+based on the current packages at risk to be archived.
+
+The clock resets every day at noon, because - not surprisingly - most
+maintainers DO actually fix the issues. However, also new issues may arise in
+previously safe packages.
+
+![](clock.png){fig-align="center"}
+
+## Addendum
+
+Purists will take this incident as an example for the bad things that can happen when you
+add too many dependencies, also called [dependency hell](https://en.wikipedia.org/wiki/Dependency_hell).
+For R, there is the [tinyverse](https://cran.r-project.org/web/packages/pacs/vignettes/tinyverse.html) community,
+which is trying to advocate for as little dependencies in R packages as possible. I personally try to follow 
+simple rules in order to decide if I should depend on a package or not:
+
+- Is the package well maintained by a larger group of maintainers and can I expect them to maintain in "indefinitely"?
+- Is the package widely used and chances are high that users already have it on their system?
+
+I make some exception to that rule for instance when it comes to `dplyr`. It would actually fulfill both requirements, but
+to me, this package is application-oriented and not dev-oriented. So if I need to wrangle some data.frames in my packages, 
+I resort to base R. 
+
+An important question I also always ask myself is: "How much functionality of the package do I actually need?". So does it make sense
+to import `stringr`, when all I need is `str_wrap()`? In these type of situations I usually try to implement the functionality myself. 
+Exceptions are, when performance matters. So if I have a function that calls a critical function 1 million times, I'd rather import the package with a high performance solution instead of implementing a suboptimal solution myself. The key here is to [profile](https://bookdown.org/rdpeng/rprogdatascience/profiling-r-code.html) your code.
+
