@@ -1,0 +1,70 @@
+---
+title: "Making of the R Hexsticker T Shirt"
+author:
+  - name: David Schoch
+    orcid: 0000-0003-2952-4812
+date: 2024-10-29
+categories: [R, fashion]
+---
+
+I have always been a huge fan of the R hexsticker culture. Sometimes I just want to
+create a new package just so I can design yet another sticker. I have started a digital collection
+a while ago and with the fantastic [r-universe.dev](https://r-universe.dev), it was quite easy to 
+get the collection to almost 3000 hexstickers. For a while, they were just sitting in a folder on my laptop until 
+I stumbled upon a [shop](https://www.printful.com/) that does [full print t-shirts](https://www.printful.com/dashboard/custom/mens/all-over-shirts) and I just knew what I had to do!
+
+
+![](tshirt1.jpg){fig-align="center"}
+
+In this post, I want to walk through the process of creating this shirt. And also share the material so you can 
+get this glorious piece of fashion yourself.
+
+# Choosing the hexstickers
+
+As mentioned above, the whole collection of hexstickers is around 3000 but not all of them have a standard size or are
+actually hexagonal. I went through all stickers by hand and removed all non-hexagonal stickers and those with obviously wrong dimensions.
+At the end I was left with around 2100 stickers. The process was not perfect and I realized later that the final product still contained
+some wrongly scaled hexlogos.  
+
+# Creating the necessary "hexwall"
+
+The first task was to arrange all scaled hexstickers into a neatly tiled wall. There is an existing solution in 
+R, to create a [hexwall](https://mitchelloharawild.com/blog/hexwall/), but the script (well magick to be precise) unfortunately
+was running out of memory. I tried to adjust the script to work with such a big amount of hexstickers but ultimately failed.
+
+Looking for an alternative I got the idea to look for videogame mapeditors and found an editor called [Tiled](https://www.mapeditor.org/). The editor allowed to create maps on a hexagonal grid with a predefined tileset.  
+
+Tilesets for `Tiled` are simple xml files and I could easily generate it with a simple R script.
+
+```r
+header <- '<?xml version="1.0" encoding="UTF-8"?>
+<tileset version="1.2" tiledversion="1.4.3" name="Hexagonal Tileset" tilewidth="100" tileheight="100" tilecount="2148" columns="0">
+  <grid orientation="hexagonal" width="100" height="100"/>'
+
+write(header, file = "hex_tileset.tsx", append = FALSE)
+fs <- paste0(list.files("resized_img100_picked", full.names = TRUE))
+for (i in 1:length(fs)) {
+    paste0('
+    <tile id="', i - 1, '">
+    <image width="100" height="100" source="', fs[i], '"/>
+  </tile>') |> write("hex_tileset.tsx", append = TRUE)
+}
+write("</tileset>", "hex_tileset.tsx", append = TRUE)
+
+```
+
+After importing the tileset, I thought that I need to place all tiles manually (I was prepared to do that!) but found a random fill option which made this waaaayyyyy easier! the problem with the random fill is that it cannot be guaranteed that every hexsticker does indeed appear at least once. Fortunately the editor has an option to export a map as json. The json contains the tile information as a matrix which I simply replaced with a matrix that was guaranteed to include all hexstickers at least once. 
+
+```r
+A <- jsonlite::fromJSON("hexmap.tmj")
+B <- matrix(sample(all), 47, 47)
+A$layers$data <- c(B)
+jsonlite::write_json(A, "hexmap2.tmj", simplifyVector = FALSE)
+```
+
+Below is the final "map".
+
+![](hexmap_small.png){fig-align="center"}
+
+
+If you want to order your own shirt, simply get the `hexmap_shirt.png` from [GitHub](https://github.com/schochastics/hexshirt) and either use the shop I used or find your own local shop that does full print t-shirts! 
