@@ -1,0 +1,432 @@
+---
+title: "Learning gt: Creating a Retro League Table"
+author:
+  - name: David Schoch
+    orcid: 0000-0003-2952-4812
+date: 2024-11-18
+categories: [R, data analysis, sports]
+execute: 
+  echo: true
+  warning: false
+  cache: false
+  message: false
+---
+
+It has been way too long since I had time to prepare a blog post that is neither a story about [Open Source](https://blog.schochastics.net/posts/2024-09-25_tales-from-os-dev-001/index.html) [Development](https://blog.schochastics.net/posts/2024-10-10_tales-from-os-dev-002/index.html), or an announcement of [yet](https://blog.schochastics.net/posts/2024-08-24_short-uuids/index.html) [another](https://blog.schochastics.net/posts/2024-02-27_chronos-fast-general-purpose-datetime-converter/index.html) R [package](https://blog.schochastics.net/posts/2024-02-23_parsing-phone-numbers-with-rust-and-r/index.html). 
+
+I meant to look into [gt](https://gt.rstudio.com/), a package to create wonderful-looking tables in R, for a very long time but everytime I get some sort of motivation, I shy away because of how complicated it looks to built a table. Hundreds of lines of codes for a 10 line table? Yeah no thank you `knitr::kable()` it is. But not this time.
+
+## Learning by breaking
+
+Whenever I want to learn something new in R, I need a personal project for which this might be relevant. I am very bad at following tutorials. Basically all my data science, web scrapping, and javascript knowledge comes from my [football analytics website](http://worldclubratings.com/) that I have been maintaining for about 8 years. So I decided, why not football data again and decided to create a simple league table, but with a twist. I try to do something mildly absurd that requires enough extra effort to learn as much about the package as possible. When I wanted to built my first [quarto](https://quarto.org) website, I created [quartocities](https://schochastics.quarto.pub/quartocities/), an homage to geocities and the beauty of 90s webpages. I didn't break quarto, but got to learn so much about Lua, shortcodes, filters just to get those funky gifs everywhere. I am not gonna add that level of absurdity to the league table. For whatever reason, I decided that the table should have a vintage look. With this, I was hopping to get into as many of the styling elements as possible.
+
+```{r}
+#| label: gt_plt_bar_stack1
+#| echo: false
+gt_plt_bar_stack1 <- function(
+    gt_object, column = NULL, palette = c(
+        "#ff4343", "#bfbfbf",
+        "#0a1c2b"
+    ), labels = c("Group 1", "Group 2", "Group 3"), color = "white",
+    position = "fill", width = 70, fmt_fn = scales::label_number(
+        scale_cut = scales::cut_short_scale(),
+        trim = TRUE
+    )) {
+    stopifnot(`Table must be of class 'gt_tbl'` = "gt_tbl" %in%
+        class(gt_object))
+    stopifnot(`There must be 2 or 3 labels` = (length(labels) %in%
+        c(2:3)))
+    stopifnot(`There must be 2 or 3 colors in the palette` = (length(palette) %in%
+        c(2:3)))
+    stopifnot(`\`position\` must be one of 'stack' or 'fill'` = (position %in%
+        c("stack", "fill")))
+    var_sym <- rlang::enquo(column)
+    var_bare <- rlang::as_label(var_sym)
+    all_vals <- gt_index(gt_object, {{ column }}) %>%
+        lapply(X = ., FUN = sum, na.rm = TRUE) %>%
+        unlist()
+    if (length(all_vals) == 0) {
+        return(gt_object)
+    }
+    total_rng <- max(all_vals, na.rm = TRUE)
+    tab_out <- text_transform(gt_object, locations = cells_body({{ column }}), fn = function(x) {
+        bar_fx <- function(x_val) {
+            if (x_val %in% c("NA", "NULL")) {
+                return("<div></div>")
+            }
+            col_pal <- palette
+            vals <- strsplit(x_val, split = ", ") %>%
+                unlist() %>%
+                as.double()
+            n_val <- length(vals)
+            stopifnot(`There must be 2 or 3 values` = (n_val %in%
+                c(2, 3)))
+            col_fill <- if (n_val == 2) {
+                c(1, 2)
+            } else {
+                c(1:3)
+            }
+            df_in <- dplyr::tibble(
+                x = vals, y = rep(1, n_val),
+                fill = col_pal[col_fill]
+            )
+            plot_out <- df_in %>% ggplot(aes(
+                x = .data$x, y = factor(.data$y),
+                fill = I(.data$fill), group = .data$y
+            )) +
+                geom_col(
+                    position = position,
+                    color = color, width = 1
+                ) +
+                geom_text(aes(label = fmt_fn(x)),
+                    hjust = 0.5, size = 3, family = "mono", position = if (position ==
+                        "fill") {
+                        position_fill(vjust = 0.5)
+                    } else if (position == "stack") {
+                        position_stack(vjust = 0.5)
+                    }, color = "white"
+                ) +
+                scale_x_continuous(expand = if (position ==
+                    "stack") {
+                    expansion(mult = c(0, 0.1))
+                } else {
+                    c(0, 0)
+                }, limits = if (position == "stack") {
+                    c(0, total_rng)
+                } else {
+                    NULL
+                }) +
+                scale_y_discrete(expand = c(0, 0)) +
+                coord_cartesian(clip = "off") +
+                theme_void() +
+                theme(
+                    legend.position = "none",
+                    plot.margin = margin(0, 0, 0, 0, "pt")
+                )
+            out_name <- file.path(tempfile(
+                pattern = "file",
+                tmpdir = tempdir(), fileext = ".svg"
+            ))
+            ggsave(out_name,
+                plot = plot_out, dpi = 25.4, height = 5,
+                width = width, units = "mm", device = "svg"
+            )
+            img_plot <- readLines(out_name) %>%
+                paste0(collapse = "") %>%
+                gt::html()
+            on.exit(file.remove(out_name), add = TRUE)
+            img_plot
+        }
+        tab_built <- lapply(X = x, FUN = bar_fx)
+    })
+    label_built <- if (length(labels) == 2) {
+        lab_pal1 <- palette[1]
+        lab_pal2 <- palette[2]
+        lab1 <- labels[1]
+        lab2 <- labels[2]
+        glue::glue(
+            "<span style='color:{lab_pal1}'><b>{lab1}</b></span>",
+            "||", "<span style='color:{lab_pal2}'><b>{lab2}</b></span>"
+        ) %>%
+            gt::html()
+    } else {
+        lab_pal1 <- palette[1]
+        lab_pal2 <- palette[2]
+        lab_pal3 <- palette[3]
+        lab1 <- labels[1]
+        lab2 <- labels[2]
+        lab3 <- labels[3]
+        glue::glue(
+            "<div><span style='color:{lab_pal1}'><b>{lab1}</b></span>",
+            "||", "<span style='color:{lab_pal2}'><b>{lab2}</b></span>",
+            "||", "<span style='color:{lab_pal3}'><b>{lab3}</b></span></div>"
+        ) %>%
+            gt::html()
+    }
+    tab_out <- gtExtras:::dt_boxhead_edit_column_label(
+        data = tab_out, var = var_bare,
+        column_label = label_built
+    )
+    suppressWarnings(tab_out)
+}
+```
+
+## Setup
+
+Besides the `gt` package, I will also use the `gtExtras` package which offers even more styling possibilities. 
+
+```{r}
+#| label: setup
+library(gt)
+library(gtExtras)
+library(tidyverse)
+
+# some retro color palettes
+cols <- c("#FAEBCC", "#b3e3e0", "#68C7C1", "#FACA78", "#F57F5B", "#DD5341", "#794A3A")
+wld <- c("#354065", "#711233", "#666666")
+```
+
+The underlying data (current league table and results) was obtained from [weltfussball.de](https://weltfussball.de). 
+
+```{r}
+#| label: prepare_data
+#| echo: false
+library(rvest)
+url <- "https://www.weltfussball.de/spielplan/bundesliga-2024-2025-spieltag/"
+
+doc <- read_html(url)
+tab <- doc |>
+    html_elements(".data .standard_tabelle") |>
+    html_table() |>
+    _[[2]]
+
+tbl <- tab |>
+    janitor::remove_empty(which = "cols") |>
+    janitor::clean_names() |>
+    mutate(mannschaft = str_squish(mannschaft)) |>
+    mutate(mannschaft = str_remove_all(mannschaft, "\\s+\\(.*\\)")) |>
+    mutate(wdl = pmap(list(s, u, n), c)) |>
+    select(-s, -u, -n)
+
+crest_tbl <- read_csv("bundesliga.csv") |>
+    semi_join(tbl, by = c("team_wf" = "mannschaft")) |>
+    slice_max(year, by = "team_wf", with_ties = FALSE)
+
+tbl <- tbl |>
+    left_join(select(crest_tbl, team_wf, img), by = c("mannschaft" = "team_wf")) |>
+    select(number, img, mannschaft:wdl)
+
+
+url <- "https://www.weltfussball.de/alle_spiele/bundesliga-2024-2025/"
+doc <- read_html(url)
+form_tbl <- doc |>
+    html_element(".standard_tabelle") |>
+    html_table() |>
+    janitor::clean_names() |>
+    select(3, 4, 5, 6) |>
+    rename(
+        "home" = x1_spieltag_3,
+        "min" = x1_spieltag_4,
+        "away" = x1_spieltag_5,
+        "result" = x1_spieltag_6
+    ) |>
+    dplyr::filter(min == "-" & result != "-:-") |>
+    select(-min) |>
+    mutate(result = str_remove_all(result, " \\(.*\\)")) |>
+    separate_wider_delim(result, delim = ":", names = c("GH", "GA")) |>
+    mutate(GH = as.numeric(GH), GA = as.numeric(GA)) |>
+    mutate(outcome = case_when(GH > GA ~ "H", GA > GH ~ "A", .default = "D")) |>
+    mutate(
+        home_result = case_when(
+            outcome == "H" ~ "W",
+            outcome == "A" ~ "L",
+            outcome == "D" ~ "D"
+        ),
+        away_result = case_when(
+            outcome == "H" ~ "L",
+            outcome == "A" ~ "W",
+            outcome == "D" ~ "D"
+        )
+    ) |>
+    select(home, home_result, away, away_result) |>
+    pivot_longer(
+        cols = c(home_result, away_result),
+        names_to = "role",
+        values_to = "result"
+    ) |>
+    group_by(mannschaft = if_else(role == "home_result", home, away)) |>
+    summarise(form = list(result), .groups = "drop")
+
+
+tbl <- tbl |> left_join(form_tbl, by = "mannschaft")
+max_wins <- length(tbl$form[[1]])
+
+tbl <- tbl |> select(1, 2, 3, 7, 4, 8, 5, 6, 9)
+```
+
+## Vanilla table
+
+Here is the table without any form of styling. 
+```{r}
+#| label: table
+tbl1 <- tbl |>
+    gt()
+
+tbl1
+```
+
+Two things might catch your eye. There seem to be two list columns (wdl and form). We will deal with them later. In general, these types of columns are usually used to create som visualization WITHIN the column.
+
+The column `img` contains paths to crests of the clubs. These can be displayed with the `gt_img_rows()` function from `gtExtras`. We also align the imiges with `cols_align()`.
+```{r}
+#| label: table_crest
+tbl1 <- tbl1 |>
+    gt_img_rows(img, img_source = "local", height = "25px") |>
+    cols_align(
+        align = "center",
+        columns = img
+    )
+tbl1
+```
+
+## Global styling
+
+Next I do some very basic global styling. `tab_options()` is used to set styles for the whole table and `tab_style()` for specific cells. Here we just add a background color and some cell borders at various locations.
+```{r}
+#| label: table_basic_style
+tbl2 <- tbl1 |>
+    tab_style(
+        style = cell_borders(color = "black", sides = c("top", "bottom"), weight = "3px"),
+        locations = cells_body()
+    ) |>
+    tab_style(
+        style = cell_borders(color = "black", sides = c("right"), weight = "3px"),
+        locations = cells_body(columns = c(1, 4, 6, 8, 9))
+    ) |>
+    tab_options(
+        table.width = pct(100),
+        table.background.color = cols[1],
+        table.border.top.color = "black",
+        table.border.top.width = "3px",
+        table.border.bottom.color = "black",
+        table.border.bottom.width = "3px"
+    )
+tbl2
+```
+
+## Individual styling
+
+Next we go into styling specific columns rows. This is all done with 
+the `tab_style()` function, setting fill and text options with `cell_fill()` and `cell_text()` and controlling where to apply the style with `cells_body()`. 
+```{r}
+#| label: table_cell_style
+tbl3 <- tbl2 |>
+    tab_style(
+        style = cell_fill("black"),
+        locations = cells_body(columns = 1)
+    ) |>
+    tab_style(
+        style = cell_text(color = "white", weight = 700),
+        locations = cells_body(columns = 1)
+    ) |>
+    cols_align(
+        align = "center",
+        columns = number
+    ) |>
+    tab_style(
+        style = cell_fill(color = cols[6]),
+        locations = cells_body(rows = 1:4, columns = 2:9)
+    ) |>
+    tab_style(
+        style = cell_fill(color = cols[5]),
+        locations = cells_body(rows = 5, columns = 2:9)
+    ) |>
+    tab_style(
+        style = cell_fill(color = cols[4]),
+        locations = cells_body(rows = 6, columns = 2:9)
+    ) |>
+    tab_style(
+        style = cell_fill(color = cols[3]),
+        locations = cells_body(rows = 17:18, columns = 2:9)
+    ) |>
+    tab_style(
+        style = cell_fill(color = cols[2]),
+        locations = cells_body(rows = 16, columns = 2:9)
+    ) |>
+    tab_style(
+        style = cell_text(weight = 700),
+        locations = cells_body(columns = 4)
+    )
+tbl3
+```
+
+## Adding a sparkline
+
+Ok now it is time to draw the attention to the list columns. The first one contains the record of wins, draws, and losses over the whole season. Here I had to rewrite the function `gt_plt_bar_stack()` slightly because it did not expose all parameters I wanted to set. Additionally, there is a [known bug]( https://github.com/jthomasmock/gtExtras/issues/139) that prevents to render the column header correctly. That is why I needed to add it manually. 
+```{r}
+#| label: table_winloss
+tbl4 <- tbl3 |>
+    gt_plt_bar_stack1(wdl,
+        width = 45,
+        labels = c("Wins", "Draws", "Losses"),
+        palette = wld[c(1, 3, 2)],
+        color = NA # cols[3]
+    ) |>
+    cols_label(wdl = html(glue::glue("<div><span style='color:{wld[1]}'><b>W</b></span>||<span style='color:{wld[3]}'><b>D</b></span>||<span style='color:{wld[2]}'><b>L</b></span></div>")))
+tbl4
+```
+
+Having done that, I realized how html and css heavy gt's actually are. That's kind of nice, because I know that (thank you quartocities).
+
+## Adding a custom column viz
+
+Having understood how to inject html into a gt object, I decided to create a design for the form column myself. There is a lot of code down there, but the essential part is the `text_transform()` part. This function allows to apply a function to the content of a cell. And thats how we inject some html and css into the target column.
+
+```{r}
+#| label: table_html_fct
+html_squares <- function(x, palette, max_val = 5) {
+    row <- '<div style="display: flex;font-family: Bungee, sans-serif; font-size: 12px;gap:3px;">'
+    for (i in (length(x) - max_val + 1):length(x)) {
+        col <- ifelse(x[i] == "W", palette[1], ifelse(x[i] == "L", palette[2], palette[3]))
+        row <- glue::glue('{row} <div style="display: flex; justify-content: center;align-items: center;background-color: {col}; color: #ffffff; border-radius: 8px; width: 1.5rem; height:2rem">{x[i]}</div>')
+    }
+    row <- glue::glue("{row} </div>")
+    return(gt::html(row))
+}
+
+form_squares <- function(gt_object, column, palette, max_val = 5) {
+    list_vals <- gt_index(gt_object = gt_object, {{ column }}, as_vector = TRUE)
+    text_transform(gt_object, locations = cells_body(columns = {{ column }}), fn = function(x) {
+        lapply(list_vals, html_squares, palette = palette, max_val = max_val)
+    })
+}
+
+tbl5 <- tbl4 |>
+    form_squares(form, wld, max_val = 5)
+
+tbl5
+```
+
+## The rest of the f*** table
+
+That was almost it. What was left was enhance the retro look and add a legend.
+After the previous step, I was very comfortable adding css to the table so I went nuts. The one new thing here is the function `opt_css()`. This allows for example to add css classes to the table. I used to get the header of the table in retro shape.
+```{r}
+#| label: table_final
+tbl5 |>
+    opt_table_font(
+        font = list(
+            google_font(name = "Bungee"), "serif"
+        ),
+        size = "14px"
+    ) |>
+    tab_header(
+        title = html('<span class="vintage-text smaller">Bundesliga 2024/25</span>')
+    ) |>
+    cols_label(number = "", img = "", mannschaft = "", sp = "G", pk = "Pt", tore = "Goals", dif = "Diff", form = "Form") |>
+    tab_source_note(
+        html(glue::glue(
+            '<span style="display: inline;font-family: Bungee, sans-serif; font-size: 12px"><span style="background-color: {cols[6]};"> Champions League</span> </span>
+         <span style="display: inline;font-family: Bungee, sans-serif; font-size: 12px"><span style="background-color: {cols[5]};"> Europa League</span> </span>
+         <span style="display: inline;font-family: Bungee, sans-serif; font-size: 12px"><span style="background-color: {cols[4]};"> Europa Conf. League</span> </span>
+         <span style="display: inline;font-family: Bungee, sans-serif; font-size: 12px"><span style="background-color: {cols[2]};"> Playoffs</span> </span>
+         <span style="display: inline;font-family: Bungee, sans-serif; font-size: 12px"><span style="background-color: {cols[3]};"> Relegation</span> </span>'
+        ))
+    ) |>
+    opt_css(
+        css = "
+    .vintage-text {
+        margin: 0;
+        font-family: Bungee;
+        line-height: 85px;
+    }
+    .smaller {
+        font-size: 60px;
+        color: #2e6364;
+        letter-spacing: 4px;
+        text-shadow: 0.5px 0.5px #f1f4d8, 1px 1px #f1f4d8, 2px 2px #f1f4d8, 2.5px 2.5px #822d2f, 3px 3px #822d2f, 3.5px 3.5px #822d2f, 4px 4px #822d2f, 4.5px 4.5px #822d2f, 5px 5px #822d2f, 5.5px 5.5px #822d2f, 6px 6px #822d2f, 6.5px 6.5px #822d2f, 7px 7px #822d2f, 7.5px 7.5px #822d2f;
+    }"
+    )
+```
+
+The end result is not perfect but gave me enough of an understanding how gt works. Now I just have to design tables for a year or so and I am sure I will remember all the things.
