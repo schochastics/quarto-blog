@@ -1,10 +1,14 @@
 ---
-title: "Extending network analysis in R with netUtils"
+title: Extending network analysis in R with netUtils
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2022-08-27
-categories: [R, package, networks]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2022-08-27'
+categories:
+- R
+- package
+- networks
+
 ---
 
 

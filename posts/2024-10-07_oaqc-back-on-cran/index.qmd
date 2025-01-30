@@ -1,10 +1,14 @@
 ---
-title: "oaqc: Orbit aware quad census package back on CRAN"
+title: 'oaqc: Orbit aware quad census package back on CRAN'
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2024-10-07
-categories: [R, package, networks]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2024-10-07'
+categories:
+- R
+- package
+- networks
+
 ---
 
 This is just a short announcement post that the R package oaqc is back on CRAN.

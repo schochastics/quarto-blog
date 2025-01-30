@@ -1,10 +1,13 @@
 ---
-title: "Network Centrality in R: New ways of measuring Centrality"
+title: 'Network Centrality in R: New ways of measuring Centrality'
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2018-12-12
-categories: [R, networks]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2018-12-12'
+categories:
+- R
+- networks
+
 ---
 
 

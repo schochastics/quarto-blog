@@ -1,10 +1,14 @@
 ---
-title: "Traveling Beerdrinker Problem"
+title: Traveling Beerdrinker Problem
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2018-01-19
-categories: [R, data analysis, visualization]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2018-01-19'
+categories:
+- R
+- data analysis
+- visualization
+
 ---
 
 

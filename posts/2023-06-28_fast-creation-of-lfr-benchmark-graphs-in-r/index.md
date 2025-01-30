@@ -1,10 +1,13 @@
 ---
-title: "Fast creation of LFR Benchmark graphs in R"
+title: Fast creation of LFR Benchmark graphs in R
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2023-06-28
-categories: [R, networks]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2023-06-28'
+categories:
+- R
+- networks
+
 ---
 
 

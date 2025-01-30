@@ -1,10 +1,14 @@
 ---
-title: "Dimensionality Reduction Methods Using FIFA 18 Player Data"
+title: Dimensionality Reduction Methods Using FIFA 18 Player Data
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2017-11-19
-categories: [R, data analysis, sports]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2017-11-19'
+categories:
+- R
+- data analysis
+- sports
+
 ---
 
 In this post, I will introduce three different methods for

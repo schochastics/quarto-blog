@@ -1,10 +1,13 @@
 ---
-title: "Preprocessing and analyzing web tracking data with webtrackR"
+title: Preprocessing and analyzing web tracking data with webtrackR
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2023-09-12
-categories: [R, package]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2023-09-12'
+categories:
+- R
+- package
+
 ---
 
 

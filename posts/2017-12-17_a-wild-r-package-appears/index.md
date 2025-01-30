@@ -1,10 +1,14 @@
 ---
-title: "A wild R package appears! Pokemon/Gameboy inspired plots in R"
+title: A wild R package appears! Pokemon/Gameboy inspired plots in R
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2017-12-17
-categories: [R, package, visualization]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2017-12-17'
+categories:
+- R
+- package
+- visualization
+
 ---
 
 

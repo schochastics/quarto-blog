@@ -1,10 +1,11 @@
 ---
-title: "Sample Entropy with Rcpp"
+title: Sample Entropy with Rcpp
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2018-02-07
-categories: [R]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2018-02-07'
+categories: R
+
 ---
 
 

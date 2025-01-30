@@ -1,10 +1,14 @@
 ---
-title: "Tales from Open Source Development I: Your package is archived"
+title: 'Tales from Open Source Development I: Your package is archived'
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2024-09-25
-categories: [R, package, devtales]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2024-09-25'
+categories:
+- R
+- package
+- devtales
+
 ---
 
 Most of the posts on this blog include a lot of code an little text besides explaining what the code does. Although I "write for a living" (scientific papers and stuff), I am not a big fan of producing walls of text. "A line of code says more than a thousand words", you know... 

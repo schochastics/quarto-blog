@@ -1,10 +1,13 @@
 ---
-title: "A suite of tools to scrape and parse search engine results"
+title: A suite of tools to scrape and parse search engine results
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2023-03-22
-categories: [R, package]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2023-03-22'
+categories:
+- R
+- package
+
 ---
 
 

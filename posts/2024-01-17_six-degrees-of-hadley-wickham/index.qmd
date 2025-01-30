@@ -1,10 +1,14 @@
 ---
-title: "Six degrees of Hadley Wickham: The CRAN co-authorship network"
+title: 'Six degrees of Hadley Wickham: The CRAN co-authorship network'
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2024-01-17
-categories: [R, networks, data analysis]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2024-01-17'
+categories:
+- R
+- networks
+- data analysis
+
 ---
 
 Once upon a time I was a dedicated network scientist. Currently though they are more peripheral in my work and I just like to toy around with interesting datasets. One of those is the CRAN *co-authorship network*. 

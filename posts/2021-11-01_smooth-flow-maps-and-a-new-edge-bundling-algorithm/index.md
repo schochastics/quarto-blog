@@ -1,10 +1,15 @@
 ---
-title: "Smooth flow maps and a new edge bundling algorithm"
+title: Smooth flow maps and a new edge bundling algorithm
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2021-11-01
-categories: [R, package, networks, visualization]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2021-11-01'
+categories:
+- R
+- package
+- networks
+- visualization
+
 ---
 
 

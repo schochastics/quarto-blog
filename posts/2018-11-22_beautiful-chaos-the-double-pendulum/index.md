@@ -1,10 +1,13 @@
 ---
-title: "Beautiful Chaos: The Double Pendulum"
+title: 'Beautiful Chaos: The Double Pendulum'
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2018-11-22
-categories: [R, simulation]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2018-11-22'
+categories:
+- R
+- simulation
+
 ---
 
 

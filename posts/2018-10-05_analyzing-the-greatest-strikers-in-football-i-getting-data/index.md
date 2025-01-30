@@ -1,10 +1,14 @@
 ---
-title: "Analyzing the Greatest Strikers in Football I: Getting Data"
+title: 'Analyzing the Greatest Strikers in Football I: Getting Data'
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2018-10-05
-categories: [R, data analysis, sports]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2018-10-05'
+categories:
+- R
+- data analysis
+- sports
+
 ---
 
 

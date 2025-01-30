@@ -1,10 +1,14 @@
 ---
-title: "An Rstudio Addin for Network Analysis and Visualization"
+title: An Rstudio Addin for Network Analysis and Visualization
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2019-01-26
-categories: [R, Rstudio addin, networks]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2019-01-26'
+categories:
+- R
+- Rstudio addin
+- networks
+
 ---
 
 

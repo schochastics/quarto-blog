@@ -1,10 +1,14 @@
 ---
-title: "Stress based graph layouts"
+title: Stress based graph layouts
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2018-09-13
-categories: [R, networks, visualization]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2018-09-13'
+categories:
+- R
+- networks
+- visualization
+
 ---
 
 **The package `smglr` was renamed to `graphlayouts`**

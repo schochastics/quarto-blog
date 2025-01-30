@@ -1,10 +1,14 @@
 ---
-title: "Analyzing NBA Player Data III: Similarity Networks"
+title: 'Analyzing NBA Player Data III: Similarity Networks'
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2018-03-10
-categories: [R, data analysis, sports]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2018-03-10'
+categories:
+- R
+- data analysis
+- sports
+
 ---
 
 

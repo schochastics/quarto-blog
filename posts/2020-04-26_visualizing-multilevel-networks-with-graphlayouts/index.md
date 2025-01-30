@@ -1,10 +1,14 @@
 ---
-title: "Visualizing Multilevel Networks with graphlayouts"
+title: Visualizing Multilevel Networks with graphlayouts
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2020-04-26
-categories: [R, networks, visualization]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2020-04-26'
+categories:
+- R
+- networks
+- visualization
+
 ---
 
 
