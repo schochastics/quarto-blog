@@ -1,0 +1,133 @@
+---
+title: "Creating data frames in Rust for R"
+author:
+  - name: David Schoch
+    orcid: 0000-0003-2952-4812
+date: 2024-01-30
+categories:
+  - R
+  - Rust
+---
+
+The content of this post is actually what I wanted to do in my [last](https://blog.schochastics.net/posts/2025-01-29_rust-in-r-beyond-vectors/). However, I went down so many rabbit holes when researching the topic that I decided to split it into a more general exploration of working with non-standard types and a post that is specifically dedicated to data frames.  
+
+I have to add the same disclaimer to this post as to the last: I am still a beginner in Rust, trying to figure things out. My main goal for now is not to write perfect/best practice Rust code, but to be able to call Rust from R (and send things to Rust from R) that goes beyond simple vectors and does what I want it to do.
+
+## Existing frameworks
+
+Data frames in R are essential because they provide a structured, table-like format for handling heterogeneous data, seamlessly integrating numeric, character, and factor variables within a single dataset. Their flexibility, built-in functions, and compatibility with R’s data manipulation packages (like the `tidyverse`) make them the go-to structure for efficient data analysis and visualization. 
+
+For general data science, there is the crate [polars](https://docs.rs/polars/latest/polars/). Polars is extremely powerful and we can already benefit from it in R with [r-polars](https://github.com/pola-rs/r-polars). The syntax might be a bit strange for newcomers, but there 
+is [tidypolars](https://github.com/etiennebacher/tidypolars) which promisses to provide a polars backend for the `tidyverse`. What this essentially means is that you can keep your `tidyverse` code while using polars in the background. That is a pretty awesome prospect and we might see this far more use cases in the future. 
+
+But we are not as ambitious as creating a full fletched data science machinery in this post. All we want is to create a data frame in Rust and bring it to R.
+
+## Data frame support in `extendr-api`
+
+In the last post, I tried to built a machinery that allows to move non-standard (anything not vector) types from R to Rust and back. That involved stuff like traits, `impl` and `TryFrom` blocks. Luckily, this is not needed for data frames. At least not for how I want to use them. `extendr-api` comes with a struct `Dataframe<T>` (a representation of a typed `data.frame`). A `data.frame` can be created from Rust with the trait `IntoDataFrameRow`. This trait can be derived for a single struct that represents a single row. The type of the row is then captured by the marker `T`. Now what does that mean?
+
+In order to construct a `data.frame` row by row, we need to define a `struct` that tells Rust what a row of the final `data.frame` should look like.
+
+
+```{r}
+#| message: false
+code <- r"(
+use extendr_api::prelude::*;
+
+#[derive(Debug,IntoDataFrameRow)]
+struct Person {
+  first: String,
+  last: String,
+  age: i32
+}
+
+#[extendr]
+fn person2df(firstR: String, lastR: String, ageR: i32) -> Dataframe<Person> {
+  let v = vec![Person {first: firstR, last: lastR, age:ageR}];
+  let df = v.into_dataframe();
+  df.expect("Failed to return a data.frame")
+}
+)"
+
+rextendr::rust_source(
+  code = code
+)
+
+df <- person2df("Alice", "Smith", 31L)
+class(df)
+df
+```
+
+Note that the type of the inport arguments is important! `firstR` and `lastR` need to be characters
+
+```{r}
+#| error: true
+#| message: false
+person2df(1, 2, 3)
+```
+
+## Building a larger data frame
+
+The function above is not very exciting. It can only return a one row data.frame and will never return more. What we need to do is to extend the function
+by allowing vector inputs. 
+
+
+```{r}
+#| error: true
+#| message: false
+
+code <- r"(
+use extendr_api::prelude::*;
+
+#[derive(Debug, IntoDataFrameRow)]
+struct Person {
+    first: String,
+    last: String,
+    age: i32,
+}
+
+#[extendr]
+fn people2df(firstR: Vec<String>, lastR: Vec<String>, ageR: Vec<i32>) -> Dataframe<Person> {
+    let len = firstR.len();
+    if lastR.len() != len || ageR.len() != len {
+        panic!("All input vectors must have the same length");
+    }
+
+    let people: Vec<Person> = firstR.into_iter()
+        .zip(lastR.into_iter())
+        .zip(ageR.into_iter())
+        .map(|((first, last), age)| Person { first, last, age })
+        .collect();
+
+    people.into_dataframe().expect("Failed to return a data.frame")
+}
+)"
+
+rextendr::rust_source(
+  code = code
+)
+```
+
+Maybe some clarifications are needed here. `zip()` is a method in Rust that combines two iterators into a single iterator of tuples. Each tuple contains elements from both iterators at the same index. In our case, it creates something like nested tuples. First it combines `firstR` and `lastR` and then adds `ageR`. The final tuples then look like this:
+
+```
+(("Alice", "Smith"), 25)
+(("Bob", "Johnson"), 30)
+(("Charlie", "Brown"), 22)
+```
+
+The `map()` method converts each typle into a object of type Person by converting `((first, last), age)` into `Person { first, last, age }`. 
+`collect()` then creates a `Vec<Person>` out of this. Now lets see if this works.
+
+```{r}
+df <- people2df(
+  firstR = c("Alice", "Bob", "Charlie"),
+  lastR = c("Smith", "Johnson", "Brown"),
+  ageR = c(31L, 12L, 22L)
+)
+
+df
+```
+
+Perfect! Now we have a simple example of how to turn given R input into a data frame in Rust.
+

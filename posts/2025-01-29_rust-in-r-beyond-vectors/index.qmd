@@ -4,7 +4,7 @@ author:
   - name: David Schoch
     orcid: 0000-0003-2952-4812
 date: 2025-01-29
-categories: [R, rust]
+categories: [R, Rust]
 ---
 
 I have blogged about using Rust in R twice before. Once about a [phone number parser](https://blog.schochastics.net/posts/2024-02-23_parsing-phone-numbers-with-rust-and-r/) called [dialrs](https://github.com/schochastics/dialrs) and once about a [datetime parser](https://blog.schochastics.net/posts/2024-02-27_chronos-fast-general-purpose-datetime-converter/) called [timeless](https://github.com/schochastics/timeless). There is a actually third post about [the archival of timeless](https://blog.schochastics.net/posts/2024-09-25_tales-from-os-dev-001) on CRAN due to 
