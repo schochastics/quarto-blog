@@ -1,10 +1,13 @@
 ---
-title: "Migrating a blog to Quarto: Reverse engineering HTML to markdown"
+title: 'Migrating a blog to Quarto: Reverse engineering HTML to markdown'
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2024-01-02
-categories: [R, quarto]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2024-01-02'
+categories:
+- R
+- quarto
+
 ---
 
 I migrated my [personal webpage](https://mr.schochastics.net) to Quarto in july 2022. The only thing I did not do was my blog; for two reasons: 1) Quarto was still very new and many of todays features were not available. I already needed to hack some things together for my personal page (which are still in place although Quarto now has the features...). For my blog, I wanted to wait until Quarto is more mature. 2) I feared that it will not be straightforward to migrate all my blog entries from blogdown to Quarto.

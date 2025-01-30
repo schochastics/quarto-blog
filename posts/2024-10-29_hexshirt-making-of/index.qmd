@@ -1,10 +1,13 @@
 ---
-title: "Making of the R Hexsticker T Shirt"
+title: Making of the R Hexsticker T Shirt
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2024-10-29
-categories: [R, fashion]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2024-10-29'
+categories:
+- R
+- fashion
+
 ---
 
 I have always been a huge fan of the R hexsticker culture. Sometimes I just want to

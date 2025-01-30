@@ -1,10 +1,13 @@
 ---
-title: "shortuuid: Generate and Translate Standard UUIDs"
+title: 'shortuuid: Generate and Translate Standard UUIDs'
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2024-08-24
-categories: [R, package]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2024-08-24'
+categories:
+- R
+- package
+
 ---
 
 The other day I stumbled upon this post on mastodon

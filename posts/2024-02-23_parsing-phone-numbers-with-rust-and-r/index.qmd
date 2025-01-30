@@ -1,10 +1,14 @@
 ---
-title: "Parsing phone numbers with Rust and R"
+title: Parsing phone numbers with Rust and R
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2024-02-23
-categories: [R, Rust, package]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2024-02-23'
+categories:
+- R
+- Rust
+- package
+
 ---
 
 On my bucket list for 2024 is to learn a bit of Rust. After reading (well skimming...) [THE BOOK](https://doc.rust-lang.org/book/) and doing a [few experiments](https://github.com/schochastics/rust_playground), I wanted to give it a try to incorporate some Rust code in an R package. I chose to wrap the [phonenumber](https://crates.io/crates/phonenumber) crate to parse phone numbers into R, because I thought thats small enough of a task that I could manage. Note that there is already an R package for that, called [dialr](https://github.com/socialresearchcentre/dialr), which wraps Google's [libphonenumber](https://github.com/google/libphonenumber) Java library. For obvious reasons, my experimental package is called [dialrs](https://github.com/schochastics/dialrs). 

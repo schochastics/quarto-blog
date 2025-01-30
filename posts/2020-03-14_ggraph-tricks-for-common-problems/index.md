@@ -1,10 +1,14 @@
 ---
-title: "ggraph tricks for common problems"
+title: ggraph tricks for common problems
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2020-03-14
-categories: [R, networks, visualization]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2020-03-14'
+categories:
+- R
+- networks
+- visualization
+
 ---
 
 

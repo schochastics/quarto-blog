@@ -1,10 +1,15 @@
 ---
-title: "Sketchy, Hand-drawn-like Networks in R"
+title: Sketchy, Hand-drawn-like Networks in R
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2020-08-23
-categories: [R, package, networks, visualization]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2020-08-23'
+categories:
+- R
+- package
+- networks
+- visualization
+
 ---
 
 

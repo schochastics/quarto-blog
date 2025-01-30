@@ -1,11 +1,15 @@
 ---
-title: "A new graphlayouts release and an update on edgebundle"
-subtitle: "with some thoughts on package development"
+title: A new graphlayouts release and an update on edgebundle
+subtitle: with some thoughts on package development
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2024-01-26
-categories: [R, networks, package]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2024-01-26'
+categories:
+- R
+- networks
+- package
+
 ---
 ```{r}
 #| label: prepare

@@ -1,10 +1,13 @@
 ---
-title: "Book announcement R 4 Social Network Analysis"
+title: Book announcement R 4 Social Network Analysis
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2024-04-04
-categories: [R, networks]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2024-04-04'
+categories:
+- R
+- networks
+
 ---
 
 I am very excited to announce the project "R 4 Social Network Analysis" ([R4SNA](https://schochastics.github.io/R4SNA/)), an introductory book for individuals who want to get started with SNA in R. This blog post is supposed to answer some basic questions around the project and its (non-existent) timeline.

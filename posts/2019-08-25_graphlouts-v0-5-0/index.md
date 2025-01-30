@@ -1,10 +1,15 @@
 ---
-title: "graphlayouts v0.5.0 released"
+title: graphlayouts v0.5.0 released
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2019-08-25
-categories: [R, package, networks, visualization]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2019-08-25'
+categories:
+- R
+- package
+- networks
+- visualization
+
 ---
 
 

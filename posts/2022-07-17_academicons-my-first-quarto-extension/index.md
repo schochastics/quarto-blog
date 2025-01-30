@@ -1,10 +1,14 @@
 ---
-title: "Academicons: my first quarto extension"
+title: 'Academicons: my first quarto extension'
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2022-07-17
-categories: [R, quarto, extension]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2022-07-17'
+categories:
+- R
+- quarto
+- extension
+
 ---
 
 

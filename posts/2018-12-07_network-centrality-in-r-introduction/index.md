@@ -1,10 +1,13 @@
 ---
-title: "Network Centrality in R: An Introduction"
+title: 'Network Centrality in R: An Introduction'
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2018-12-07
-categories: [R, networks]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2018-12-07'
+categories:
+- R
+- networks
+
 ---
 
 

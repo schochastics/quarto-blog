@@ -1,10 +1,14 @@
 ---
-title: "Using a Quarto Dashboard for GitHub Wrapped"
+title: Using a Quarto Dashboard for GitHub Wrapped
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2023-12-18
-categories: [R, quarto, GitHub]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2023-12-18'
+categories:
+- R
+- quarto
+- GitHub
+
 ---
 
 

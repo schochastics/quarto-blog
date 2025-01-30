@@ -1,10 +1,14 @@
 ---
-title: "rang: make ancient R code run again"
+title: 'rang: make ancient R code run again'
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2023-02-16
-categories: [R, package, reproducibility]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2023-02-16'
+categories:
+- R
+- package
+- reproducibility
+
 ---
 
 

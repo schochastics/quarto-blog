@@ -1,10 +1,13 @@
 ---
-title: "adaR: An accurate, fast and WHATWG-compliant URL parser"
+title: 'adaR: An accurate, fast and WHATWG-compliant URL parser'
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2023-10-01
-categories: [R, package]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2023-10-01'
+categories:
+- R
+- package
+
 ---
 
 

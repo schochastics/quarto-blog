@@ -1,10 +1,13 @@
 ---
-title: "Efficient row min calculation: From R to C"
+title: 'Efficient row min calculation: From R to C'
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2023-11-16
-categories: [R, C]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2023-11-16'
+categories:
+- R
+- C
+
 ---
 
 

@@ -1,12 +1,13 @@
 ---
-title: "Creating data frames in Rust for R"
+title: Creating data frames in Rust for R
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2024-01-30
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2024-01-30'
 categories:
-  - R
-  - Rust
+- R
+- Rust
+
 ---
 
 The content of this post is actually what I wanted to do in my [last](https://blog.schochastics.net/posts/2025-01-29_rust-in-r-beyond-vectors/). However, I went down so many rabbit holes when researching the topic that I decided to split it into a more general exploration of working with non-standard types and a post that is specifically dedicated to data frames.  

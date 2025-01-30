@@ -1,10 +1,14 @@
 ---
-title: "Mapping NBA Shot Locations"
+title: Mapping NBA Shot Locations
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2019-06-29
-categories: [R, data analysis, sports]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2019-06-29'
+categories:
+- R
+- data analysis
+- sports
+
 ---
 
 

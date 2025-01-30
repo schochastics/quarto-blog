@@ -1,10 +1,15 @@
 ---
-title: "Non-hierarchical edge bundling, flow maps and metro maps in R"
+title: Non-hierarchical edge bundling, flow maps and metro maps in R
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2021-01-15
-categories: [R, package, networks, visualization]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2021-01-15'
+categories:
+- R
+- package
+- networks
+- visualization
+
 ---
 
 

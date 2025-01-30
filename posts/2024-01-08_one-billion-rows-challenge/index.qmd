@@ -1,11 +1,14 @@
 ---
-title: "One billion row challenge using base R"
+title: One billion row challenge using base R
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2024-01-08
-categories: [R]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2024-01-08'
+categories: R
+
 ---
+
+**Edit (2025-01-30): The text and benchmarks about `Rfast` are not correct anymore. I had to rerub the post for various reasons and the code didnt work anymore. After fixing it, Rfast was running slower than back in January 2024. What du we learn from this? Use renv....** 
 
 *One of my new years resolutions is to blog a bit more on the random shenanigans I do with R. This is one of those.*[^1]
 
@@ -54,16 +57,16 @@ The other obvious solution is to split the data frame according to stats and the
 ```{r}
 #| label: split
 split_lapply <- function(D) {
-    result <- lapply(split(D, D$state), function(x) {
-        stats <- sum_stats_vec(x$measurement)
-        data.frame(
-            state = unique(x$state),
-            min = stats[1],
-            max = stats[2],
-            mean = stats[3]
-        )
-    })
-    do.call("rbind", result)
+  result <- lapply(split(D, D$state), function(x) {
+    stats <- sum_stats_vec(x$measurement)
+    data.frame(
+      state = unique(x$state),
+      min = stats[1],
+      max = stats[2],
+      mean = stats[3]
+    )
+  })
+  do.call("rbind", result)
 }
 split_lapply(D) |> head()
 ```
@@ -115,11 +118,11 @@ The solution is somewhat similar to split/lapply.
 #| label: reduce
 
 reduce <- function(D) {
-    state_list <- split(D$measurement, D$state)
-    Reduce(function(x, y) {
-        res <- sum_stats_vec(state_list[[y]])
-        rbind(x, data.frame(state = y, mean = res[1], min = res[2], max = res[3]))
-    }, names(state_list), init = NULL)
+  state_list <- split(D$measurement, D$state)
+  Reduce(function(x, y) {
+    res <- sum_stats_vec(state_list[[y]])
+    rbind(x, data.frame(state = y, mean = res[1], min = res[2], max = res[3]))
+  }, names(state_list), init = NULL)
 }
 
 reduce(D) |> head()
@@ -133,14 +136,14 @@ Pondering about how this functions could be sped up in general, I remembered the
 #| label: Rfast
 
 Rfast <- function(D) {
-    lev_int <- as.numeric(D$state)
-    minmax <- Rfast::group(D$measurement, lev_int, method = "min.max")
-    data.frame(
-        state = levels(D$state),
-        mean = Rfast::group(D$measurement, lev_int, method = "mean"),
-        min = minmax[1, ],
-        max = minmax[2, ]
-    )
+  lev_int <- as.numeric(D$state)
+  minmax <- Rfast::group(D$measurement, ina = lev_int, method = "min")
+  data.frame(
+    state = levels(D$state),
+    mean = Rfast::group(D$measurement, lev_int, method = "mean"),
+    min = Rfast::group(D$measurement, ina = lev_int, method = "min"),
+    max = Rfast::group(D$measurement, ina = lev_int, method = "max")
+  )
 }
 
 Rfast(D) |> head()
@@ -154,14 +157,14 @@ For better readability I reorder the benchmark results from `microbenchmark` acc
 ```{r}
 #| label: bench_print
 reorderMicrobenchmarkResults <- function(res, order = "median") {
-    stopifnot("Argument 'res' must be a 'microbenchmark' result" = inherits(res, "microbenchmark"))
+  stopifnot("Argument 'res' must be a 'microbenchmark' result" = inherits(res, "microbenchmark"))
 
-    smry <- summary(res)
-    res$expr <- factor(res$expr,
-        levels = levels(res$expr)[order(smry[["median"]])],
-        ordered = TRUE
-    )
-    res
+  smry <- summary(res)
+  res$expr <- factor(res$expr,
+    levels = levels(res$expr)[order(smry[["median"]])],
+    ordered = TRUE
+  )
+  res
 }
 ```
 
@@ -174,18 +177,18 @@ sum_stats_list <- function(x) list(min = min(x), max = max(x), mean = mean(x))
 sum_stats_tibble <- function(x) tibble::tibble(min = min(x), max = max(x), mean = mean(x))
 
 bench1e6 <- microbenchmark::microbenchmark(
-    aggregate = aggregate(measurement ~ state, data = D, FUN = sum_stats_vec),
-    split_lapply = split_lapply(D),
-    array2DF_by = array2DF(by(D$measurement, D$state, sum_stats_vec)),
-    raw_by = by(D$measurement, D$state, sum_stats_vec),
-    docall_tapply = do.call("rbind", tapply(D$measurement, D$state, sum_stats_vec)),
-    sapply_tapply = sapply(tapply(D$measurement, D$state, sum_stats_vec), rbind),
-    array2DF_tapply = array2DF(tapply(D$measurement, D$state, sum_stats_vec)),
-    reduce = reduce(D),
-    Rfast = Rfast(D),
-    dplyr = D |> dplyr::group_by(state) |> dplyr::summarise(sum_stats_tibble(measurement)) |> dplyr::ungroup(),
-    datatable = D[, .(sum_stats_list(measurement)), by = state],
-    times = 25
+  aggregate = aggregate(measurement ~ state, data = D, FUN = sum_stats_vec),
+  split_lapply = split_lapply(D),
+  array2DF_by = array2DF(by(D$measurement, D$state, sum_stats_vec)),
+  raw_by = by(D$measurement, D$state, sum_stats_vec),
+  docall_tapply = do.call("rbind", tapply(D$measurement, D$state, sum_stats_vec)),
+  sapply_tapply = sapply(tapply(D$measurement, D$state, sum_stats_vec), rbind),
+  array2DF_tapply = array2DF(tapply(D$measurement, D$state, sum_stats_vec)),
+  reduce = reduce(D),
+  Rfast = Rfast(D),
+  dplyr = D |> dplyr::group_by(state) |> dplyr::summarise(sum_stats_tibble(measurement)) |> dplyr::ungroup(),
+  datatable = D[, .(sum_stats_list(measurement)), by = state],
+  times = 25
 )
 ```
 
@@ -208,7 +211,7 @@ summary(reorderMicrobenchmarkResults(bench1e6)) |> knitr::kable()
 
 First of, I was very surprised by the bad performance of `aggregate`. I looked at the source code and it appears to be a more fancy lapply/split type of functions with a lot of `if/else` and `for` which do slow down the function heavily. For the benchmark with the bigger dataset, I actually discarded the function because it was way too slow.
 
-Apart from that, there are three groups. `Rfast` and `data.table` are the fastest clearly the fastest. The second group are the `tapply` versions. I am quite pleased with the fact that the data frame building via `do.call`, `sapply` and `array2DF` are very much comparable, because I really like my `array2DF` discovery. The remaining solutions are pretty much comparable. I am surprised though, that `dplyr` falls behind many of the base solutions.[^2]
+Apart from that, there are three groups. `Rfast` and `data.table` are the fastest. The second group are the `tapply` versions. I am quite pleased with the fact that the data frame building via `do.call`, `sapply` and `array2DF` are very much comparable, because I really like my `array2DF` discovery. The remaining solutions are pretty much comparable. I am surprised though, that `dplyr` falls behind many of the base solutions.[^2]
 
 Moving on to the 100 million file to see if size makes a difference.
 ```{r}
@@ -218,18 +221,18 @@ Moving on to the 100 million file to see if size makes a difference.
 D <- data.table::fread("measurements1e8.csv", stringsAsFactors = TRUE)
 
 bench1e8 <- microbenchmark::microbenchmark(
-    # aggregate = aggregate(measurement ~ state, data = D, FUN = sum_stats_vec),
-    split_lapply = split_lapply(D),
-    array2DF_by = array2DF(by(D$measurement, D$state, sum_stats_vec)),
-    raw_by = by(D$measurement, D$state, sum_stats_vec),
-    docall_tapply = do.call("rbind", tapply(D$measurement, D$state, sum_stats_vec)),
-    sapply_tapply = sapply(tapply(D$measurement, D$state, sum_stats_vec), rbind),
-    array2DF_tapply = array2DF(tapply(D$measurement, D$state, sum_stats_vec)),
-    reduce = reduce(D),
-    Rfast = Rfast(D),
-    dplyr = D |> dplyr::group_by(state) |> dplyr::summarise(sum_stats_tibble(measurement)) |> dplyr::ungroup(),
-    datatable = D[, .(sum_stats_list(measurement)), by = state],
-    times = 10
+  # aggregate = aggregate(measurement ~ state, data = D, FUN = sum_stats_vec),
+  split_lapply = split_lapply(D),
+  array2DF_by = array2DF(by(D$measurement, D$state, sum_stats_vec)),
+  raw_by = by(D$measurement, D$state, sum_stats_vec),
+  docall_tapply = do.call("rbind", tapply(D$measurement, D$state, sum_stats_vec)),
+  sapply_tapply = sapply(tapply(D$measurement, D$state, sum_stats_vec), rbind),
+  array2DF_tapply = array2DF(tapply(D$measurement, D$state, sum_stats_vec)),
+  reduce = reduce(D),
+  Rfast = Rfast(D),
+  dplyr = D |> dplyr::group_by(state) |> dplyr::summarise(sum_stats_tibble(measurement)) |> dplyr::ungroup(),
+  datatable = D[, .(sum_stats_list(measurement)), by = state],
+  times = 10
 )
 ```
 

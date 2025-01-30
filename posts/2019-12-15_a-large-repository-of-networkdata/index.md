@@ -1,10 +1,14 @@
 ---
-title: "A large repository of networkdata"
+title: A large repository of networkdata
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2019-12-15
-categories: [R, package, networks]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2019-12-15'
+categories:
+- R
+- package
+- networks
+
 ---
 
 

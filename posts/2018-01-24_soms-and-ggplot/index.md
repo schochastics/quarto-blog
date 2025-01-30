@@ -1,10 +1,13 @@
 ---
-title: "SOMs and ggplot"
+title: SOMs and ggplot
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2018-01-24
-categories: [R, visualization]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2018-01-24'
+categories:
+- R
+- visualization
+
 ---
 
 

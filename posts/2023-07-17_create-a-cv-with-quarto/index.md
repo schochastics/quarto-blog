@@ -1,10 +1,13 @@
 ---
-title: "Create a CV with Quarto"
+title: Create a CV with Quarto
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2023-07-17
-categories: [R, quarto]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2023-07-17'
+categories:
+- R
+- quarto
+
 ---
 
 

@@ -1,10 +1,15 @@
 ---
-title: "A package for analysing signed networks"
+title: A package for analysing signed networks
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2020-01-25
-categories: [R, package, networks, visualization]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2020-01-25'
+categories:
+- R
+- package
+- networks
+- visualization
+
 ---
 
 

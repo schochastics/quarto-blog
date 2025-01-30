@@ -1,10 +1,14 @@
 ---
-title: "Six Degrees of Zlatan Ibrahimovic"
+title: Six Degrees of Zlatan Ibrahimovic
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2018-09-28
-categories: [R, data analysis, sports]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2018-09-28'
+categories:
+- R
+- data analysis
+- sports
+
 ---
 
 

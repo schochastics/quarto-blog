@@ -1,12 +1,13 @@
 ---
-title: "rtoot: Collecting and Analyzing Mastodon Data"
+title: 'rtoot: Collecting and Analyzing Mastodon Data'
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2022-11-11
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2022-11-11'
 categories:
-  - R
-  - package
+- R
+- package
+
 ---
 
 

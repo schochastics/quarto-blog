@@ -1,10 +1,13 @@
 ---
-title: "Raspberry Pi E-Paper Dashboard with R"
+title: Raspberry Pi E-Paper Dashboard with R
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2020-10-16
-categories: [R, DIY]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2020-10-16'
+categories:
+- R
+- DIY
+
 ---
 
 

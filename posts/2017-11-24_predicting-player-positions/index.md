@@ -1,10 +1,14 @@
 ---
-title: "Predicting Player Positions of FIFA 18 Players"
+title: Predicting Player Positions of FIFA 18 Players
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2017-11-24
-categories: [R, data analysis, sports]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2017-11-24'
+categories:
+- R
+- data analysis
+- sports
+
 ---
 
 

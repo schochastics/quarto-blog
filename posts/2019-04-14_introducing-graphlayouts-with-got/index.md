@@ -1,10 +1,14 @@
 ---
-title: "Introducing graphlayouts with Game of Thrones"
+title: Introducing graphlayouts with Game of Thrones
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2019-04-14
-categories: [R, networks, visualization]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2019-04-14'
+categories:
+- R
+- networks
+- visualization
+
 ---
 
 

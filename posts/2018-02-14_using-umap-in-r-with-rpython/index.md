@@ -1,10 +1,11 @@
 ---
-title: "Using UMAP in R with rPython"
+title: Using UMAP in R with rPython
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2018-02-14
-categories: [R]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2018-02-14'
+categories: R
+
 ---
 
 

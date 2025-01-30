@@ -1,10 +1,15 @@
 ---
-title: "timeless: A fast general purpose datetime parser"
+title: 'timeless: A fast general purpose datetime parser'
 author:
-  - name: David Schoch
-    orcid: 0000-0003-2952-4812
-date: 2024-02-27
-categories: [R, package, Rust]
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2024-02-27'
+categories:
+- R
+- package
+- Rust
+execute: 
+  warning: false
 ---
 
 **Update II**: 
@@ -70,8 +75,8 @@ library(anytime)
 It does not recognize all accepted formats of `timeless` out of the box. However, the unrecognized formats can easily be added via `anytime::addFormats()`.
 ```{r}
 dplyr::coalesce(
-    anytime(bench_date),
-    anydate(bench_date)
+  anytime(bench_date),
+  anydate(bench_date)
 )
 ```
 
@@ -101,19 +106,19 @@ This benchmark just checks **if** something was parsed and does **not** say if t
 #| label: parse_ability
 sum_na <- function(x) sum(is.na(x))
 data.frame(
-    type = c("datetimes", "epochs", "dates", "all"),
-    chronos = c(
-        sum_na(chronos(bench_datetimes)),
-        sum_na(chronos(bench_epochs)),
-        sum_na(chronos(bench_dates, out_format = "date")),
-        sum_na(chronos(bench))
-    ),
-    anytime = c(
-        sum_na(anytime(bench_datetimes)),
-        sum_na(anytime(as.numeric(bench_epochs))),
-        sum_na(anydate(bench_dates)),
-        sum_na(anytime(bench))
-    )
+  type = c("datetimes", "epochs", "dates", "all"),
+  chronos = c(
+    sum_na(chronos(bench_datetimes)),
+    sum_na(chronos(bench_epochs)),
+    sum_na(chronos(bench_dates, out_format = "date")),
+    sum_na(chronos(bench))
+  ),
+  anytime = c(
+    sum_na(anytime(bench_datetimes)),
+    sum_na(anytime(as.numeric(bench_epochs))),
+    sum_na(anydate(bench_dates)),
+    sum_na(anytime(bench))
+  )
 )
 ```
 
@@ -126,12 +131,12 @@ The package [fasttime](https://github.com/s-u/fasttime) can be used together wit
 #| label: fast_chronos
 
 fast_chronos <- function(x, out_format = "datetime") {
-    res <- chronos(x, out_format = "character")
-    if (out_format == "datetime") {
-        return(fasttime::fastPOSIXct(res))
-    } else {
-        return(fasttime::fastDate(res))
-    }
+  res <- chronos(x, out_format = "character")
+  if (out_format == "datetime") {
+    return(fasttime::fastPOSIXct(res))
+  } else {
+    return(fasttime::fastDate(res))
+  }
 }
 ```
 
@@ -139,10 +144,10 @@ fast_chronos <- function(x, out_format = "datetime") {
 ```{r}
 #| label: bench_all
 mb <- microbenchmark::microbenchmark(
-    chronos = chronos(bench),
-    fast_chronos = fast_chronos(bench),
-    anytime = anytime(bench),
-    times = 100L
+  chronos = chronos(bench),
+  fast_chronos = fast_chronos(bench),
+  anytime = anytime(bench),
+  times = 100L
 )
 ggplot2::autoplot(mb)
 ```
@@ -151,10 +156,10 @@ ggplot2::autoplot(mb)
 ```{r}
 #| label: bench_datetime
 mb <- microbenchmark::microbenchmark(
-    chronos = chronos(bench_datetimes),
-    fast_chronos = fast_chronos(bench_datetimes),
-    anytime = anytime(bench_datetimes),
-    times = 100L
+  chronos = chronos(bench_datetimes),
+  fast_chronos = fast_chronos(bench_datetimes),
+  anytime = anytime(bench_datetimes),
+  times = 100L
 )
 ggplot2::autoplot(mb)
 ```
@@ -164,12 +169,12 @@ ggplot2::autoplot(mb)
 #| label: bench_epoch
 bench_epochs_num <- as.integer(bench_epochs)
 mb <- microbenchmark::microbenchmark(
-    chronos = chronos(bench_epochs_num),
-    fast_chronos = fast_chronos(bench_epochs_num),
-    anytime = anytime(bench_epochs_num),
-    posix = as.POSIXct(bench_epochs_num),
-    fastposix = fasttime::fastPOSIXct(bench_epochs_num),
-    times = 100L
+  chronos = chronos(bench_epochs_num),
+  fast_chronos = fast_chronos(bench_epochs_num),
+  anytime = anytime(bench_epochs_num),
+  posix = as.POSIXct(bench_epochs_num),
+  fastposix = fasttime::fastPOSIXct(bench_epochs_num),
+  times = 100L
 )
 ggplot2::autoplot(mb)
 ```
@@ -180,10 +185,10 @@ When the input vector only consists of epoch timestamps, it is best to parse the
 ```{r}
 #| label: bench_date
 mb <- microbenchmark::microbenchmark(
-    chronos = chronos(bench_date, out_format = "date"),
-    fast_chronos = fast_chronos(bench_date, out_format = "date"),
-    anytime = anydate(bench_date),
-    times = 100L
+  chronos = chronos(bench_date, out_format = "date"),
+  fast_chronos = fast_chronos(bench_date, out_format = "date"),
+  anytime = anydate(bench_date),
+  times = 100L
 )
 ggplot2::autoplot(mb)
 ```
