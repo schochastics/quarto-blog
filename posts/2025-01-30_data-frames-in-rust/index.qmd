@@ -7,10 +7,9 @@ date: '2024-01-30'
 categories:
 - R
 - Rust
-
 ---
 
-The content of this post is actually what I wanted to do in my [last](https://blog.schochastics.net/posts/2025-01-29_rust-in-r-beyond-vectors/). However, I went down so many rabbit holes when researching the topic that I decided to split it into a more general exploration of working with non-standard types and a post that is specifically dedicated to data frames.  
+The content of this post is actually what I wanted to do in my [last](https://blog.schochastics.net/posts/2025-01-29_rust-in-r-beyond-vectors/). But I went down so many rabbit holes when researching the topic that I decided to split it into a more general exploration of working with non-standard types and a post that is specifically dedicated to data frames.  
 
 I have to add the same disclaimer to this post as to the last: I am still a beginner in Rust, trying to figure things out. My main goal for now is not to write perfect/best practice Rust code, but to be able to call Rust from R (and send things to Rust from R) that goes beyond simple vectors and does what I want it to do.
 
@@ -25,7 +24,7 @@ But we are not as ambitious as creating a full fletched data science machinery i
 
 ## Data frame support in `extendr-api`
 
-In the last post, I tried to built a machinery that allows to move non-standard (anything not vector) types from R to Rust and back. That involved stuff like traits, `impl` and `TryFrom` blocks. Luckily, this is not needed for data frames. At least not for how I want to use them. `extendr-api` comes with a struct `Dataframe<T>` (a representation of a typed `data.frame`). A `data.frame` can be created from Rust with the trait `IntoDataFrameRow`. This trait can be derived for a single struct that represents a single row. The type of the row is then captured by the marker `T`. Now what does that mean?
+In the last post, I tried to built a something that allows to move non-standard (anything that is not vector) types from R to Rust and back. That involved stuff like traits, `impl` and `TryFrom` blocks. Luckily, this is not needed for data frames. At least not for how I want to use them here. `extendr-api` comes with a struct `Dataframe<T>` (a representation of a typed `data.frame`). A `data.frame` can be created from Rust with the trait `IntoDataFrameRow`. This trait can be derived for a single struct that represents a single row. The type of the row is then captured by the marker `T`. Now what does that mean?
 
 In order to construct a `data.frame` row by row, we need to define a `struct` that tells Rust what a row of the final `data.frame` should look like.
 
@@ -89,10 +88,6 @@ struct Person {
 
 #[extendr]
 fn people2df(firstR: Vec<String>, lastR: Vec<String>, ageR: Vec<i32>) -> Dataframe<Person> {
-    let len = firstR.len();
-    if lastR.len() != len || ageR.len() != len {
-        panic!("All input vectors must have the same length");
-    }
 
     let people: Vec<Person> = firstR.into_iter()
         .zip(lastR.into_iter())
@@ -131,4 +126,77 @@ df
 ```
 
 Perfect! Now we have a simple example of how to turn given R input into a data frame in Rust.
+This approach is just a little limitting, because the our Rust data frame has a fixed setup: Three columns, two must be characters and one numeric.
+This is good if we want to create a standard output. I used this approach in a small R package called [urlparser](https://github.com/schochastics/urlparser) (I will write a separate post on it.). The input is a vector of urls and the output a fixed data frame with nine columns, each containing a part of the parsed url. For other tasks we need some more flexibility.
 
+## Oh god there is `data_frame!`
+
+Ok, so I was ready to move on to call it a day with this post when I learned about [`data_frame!`](https://docs.rs/extendr-api/latest/extendr_api/macro.data_frame.html). It is almost ridiculous how easy it is to create data frame from vectors with this.
+
+```{r}
+#| message: false
+
+code <- r"(
+    use extendr_api::prelude::*;
+    #[extendr]
+    fn people2df_short(firstR: Vec<String>, lastR: Vec<String>, ageR: Vec<i32>) -> List {
+      let res = data_frame!(
+        first = firstR,
+        last = lastR,
+        age = ageR
+      );
+      res.try_into().unwrap()
+    }
+)"
+
+rextendr::rust_source(
+  code = code
+)
+```
+
+This is so much easier and clearer comming from the perspective of an R programmer! 
+
+Here is the function in action. 
+
+```{r}
+df <- people2df_short(
+  firstR = c("Alice", "Bob", "Charlie"),
+  lastR = c("Smith", "Johnson", "Brown"),
+  ageR = c(31L, 12L, 22L)
+)
+
+class(df)
+df
+```
+
+**How does this work?** What we are using here is a "Macro". Macros are a powerful metaprogramming feature that allows code to be generated at compile time. While functions operate on values, macros operate on the syntax of the code itself. This enables more flexible and reusable patterns. If you want to learn more, check out [the book](https://doc.rust-lang.org/book/ch19-06-macros.html).
+
+Let us build a small illustrative example.
+
+```{r}
+#| message: false
+code <- r"(
+    use extendr_api::prelude::*;
+
+    macro_rules! sum_and_cheer {
+        ($a:expr, $b:expr) => {{
+            let sum = $a + $b;
+            rprint!("Rust rules!");
+            sum
+        }};
+    }
+
+    #[extendr]
+    fn cheer_sum(a: f64, b: f64) -> f64 {
+        sum_and_cheer!(a, b)
+    }
+)"
+
+rextendr::rust_source(
+  code = code
+)
+
+cheer_sum(1.1, 2.2)
+```
+
+The cool thing about Macros is that you can essentially hide away complex code and produce an easier to use API. That is pretty nice and does make working with Rust from R a lot easier!
