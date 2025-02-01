@@ -3,7 +3,7 @@ title: Creating data frames in Rust for R
 author:
 - name: David Schoch
   orcid: 0000-0003-2952-4812
-date: '2024-01-30'
+date: '2025-01-30'
 categories:
 - R
 - Rust
@@ -11,7 +11,7 @@ categories:
 
 The content of this post is actually what I wanted to do in my [last](https://blog.schochastics.net/posts/2025-01-29_rust-in-r-beyond-vectors/). But I went down so many rabbit holes when researching the topic that I decided to split it into a more general exploration of working with non-standard types and a post that is specifically dedicated to data frames.  
 
-I have to add the same disclaimer to this post as to the last: I am still a beginner in Rust, trying to figure things out. My main goal for now is not to write perfect/best practice Rust code, but to be able to call Rust from R (and send things to Rust from R) that goes beyond simple vectors and does what I want it to do.
+I have to add the same disclaimer to this post as to the last: I am still a beginner in Rust, trying to figure things out. My main goal for now is not to write perfect/best practice Rust code, but to be able to call Rust from R (and send things to R from Rust) that goes beyond simple vectors and does what I want it to do.
 
 ## Existing frameworks
 
@@ -24,7 +24,7 @@ But we are not as ambitious as creating a full fletched data science machinery i
 
 ## Data frame support in `extendr-api`
 
-In the last post, I tried to built a something that allows to move non-standard (anything that is not vector) types from R to Rust and back. That involved stuff like traits, `impl` and `TryFrom` blocks. Luckily, this is not needed for data frames. At least not for how I want to use them here. `extendr-api` comes with a struct `Dataframe<T>` (a representation of a typed `data.frame`). A `data.frame` can be created from Rust with the trait `IntoDataFrameRow`. This trait can be derived for a single struct that represents a single row. The type of the row is then captured by the marker `T`. Now what does that mean?
+In the last post, I tried to built something that allows to move non-standard (anything that is not vector) types from R to Rust and back. That involved stuff like traits, `impl` and `TryFrom` blocks. Luckily, this is not needed for data frames. At least not for how I want to use them here. `extendr-api` comes with a struct `Dataframe<T>` (a representation of a typed `data.frame`). A `data.frame` can be created from Rust with the trait `IntoDataFrameRow`. This trait can be derived for a single struct that represents a single row. The type of the row is then captured by the marker `T`. Now what does that mean?
 
 In order to construct a `data.frame` row by row, we need to define a `struct` that tells Rust what a row of the final `data.frame` should look like.
 
@@ -200,3 +200,10 @@ cheer_sum(1.1, 2.2)
 ```
 
 The cool thing about Macros is that you can essentially hide away complex code and produce an easier to use API. That is pretty nice and does make working with Rust from R a lot easier!
+
+## Conclusion
+
+In this post I did a little exploration on how to create data frames in Rust. 
+I am super happy to have found the macro `data_frame!` which also helped me to understand what macros actually are.
+I am pretty sure I am still missing parts that would make working with data frames even simpler, but
+my Rust journey has not ended yet.
