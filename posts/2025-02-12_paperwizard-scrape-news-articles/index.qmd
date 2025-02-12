@@ -1,0 +1,96 @@
+---
+title: "Paperwizard: Scrape News Sites using readability.js"
+author:
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2025-02-12'
+categories:
+- R
+- package
+---
+
+In this blog post I want to introduce my last academically motivated R package [`paperwizard`](https://github.com/schochastics/paperwizard).
+The package is designed to extract readable content (such as news
+articles) from webpages using [Readability.js](https://github.com/mozilla/readability). 
+To do so, the package leverages `Node.js` to parse webpages and identify the main content of an article, allowing
+you to work with cleaner, structured content.
+
+The package is supposed to be an addon for [paperboy](https://github.com/jbgruber/paperboy), which implements
+custom scraper for many international news websites.
+
+## Installation
+
+You can install the package from GitHub
+
+``` r
+pak::pak("schochastics/paperwizard")
+```
+
+or r-universe
+
+```r
+install.packages("paperwizard", repos = c("https://schochastics.r-universe.dev", "https://cloud.r-project.org"))
+```
+
+## Setup
+
+To use `paperwizard`, you need to have Node.js installed. Download and install Node.js from the [official
+website](https://nodejs.org/en/download/package-manager). The page offers
+instructions for all major OS. After installing Node.js, you can confirm the
+installation by running the following command in your terminal.
+```bash
+node -v
+```
+This should return the version of Node.js installed.
+
+To make sure that the package knows where the command `node` is found, set 
+```r
+options(paperwizard.node_path = "/path/to/node")
+```
+if it is not installed in a standard location.
+
+Once Node.js is installed, you need to install the necessary libraries which are
+linkedom, Readability.js, puppeteer and axios. There is a convenient wrapper available in the package.
+
+```r
+pw_npm_install()
+```
+
+## Using the package
+
+You can use it either by supplying a url
+
+```r
+pw_deliver(url)
+```
+
+or a data.frame that was created by `paperboy::pb_collect()`
+```r
+x <- paperboy::pb_collect(list_or_urls)
+pw_deliver(x)
+```
+
+## Example
+
+To get more insights on the returned objects, let us get a recent article from [The Conversation](https://theconversation.com/).
+
+```{r}
+url <- "https://theconversation.com/generative-ai-online-platforms-and-compensation-for-content-the-need-for-a-new-framework-242847"
+article <- paperwizard::pw_deliver(url)
+str(article)
+```
+
+Most fields should be self explanatory. The `misc` field is a dump of the raw return values of the scraper for debugging or to get additional information that is not available in the standard fields.
+
+## Paperboy vs. Paperwizard
+
+As I said in the introduction, `paperwizard` is meant to be an addon to `paperboy`.
+Generally, it is always better to have a dedicated scraper for a news site, but building and
+maintaining such a scraper, let alone dozens of them, is a lot of work. `Paperwizard` can help in situations where a
+dedicated scraper is either not available or currently broken. But given its generality, it does not mean that it will work for any
+given site without issues. It is always a good idea to at least check a few examples manually to verify that the scraper worked.
+
+## Important Considerations
+
+While web scraping is a valuable tool for data collection, it’s essential for researchers to approach it responsibly. 
+Responsible web scraping helps ensure that data is collected ethically, legally, and in ways that protect both the integrity of the website and the privacy of individuals whose data may be included. If you are new to the topic, you can finde some help in this [GESIS DBD Guide](https://www.gesis.org/fileadmin/admin/Dateikatalog/pdf/guides/10_soldner_how_to_static_web_scraping.pdf). 
