@@ -15,6 +15,9 @@ articles) from webpages using [Readability.js](https://github.com/mozilla/readab
 To do so, the package leverages `Node.js` to parse webpages and identify the main content of an article, allowing
 you to work with cleaner, structured content.
 
+![](paperwizard.png){fig-align="center"}
+
+
 The package is supposed to be an addon for [paperboy](https://github.com/jbgruber/paperboy), which implements
 custom scraper for many international news websites.
 
