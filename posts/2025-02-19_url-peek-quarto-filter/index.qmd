@@ -1,0 +1,67 @@
+---
+title: "Introducing url-peek: A simple Quarto filter for domain previews"
+author:
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2025-02-19'
+categories:
+- R
+- quarto
+---
+
+When writing documents, it's often useful to provide some context for links, especially when the URL itself 
+isn't visible in the text. For example, if you reference a resource with [link](https://www.youtube.com/watch?v=dQw4w9WgXcQ), 
+the reader doesn't immediately know where the link leads unless they hover over it or click.
+
+To address this, I created `url-peek`, a small Quarto filter that automatically adds the domain of a link in
+brackets after the link text. This gives readers a quick visual cue about the destination without cluttering the document too much.
+
+## How it works
+
+With `url-peek`, a link like this:
+
+```md
+[link](https://github.com/schochastics/quarto-url-peek))
+```
+
+would render as
+
+```html
+<a href="https://github.com/schochastics/quarto-url-peek">link</a> [github.com]
+```
+Here is a visual example:
+
+![](example.png)
+
+This keeps the document readable while still providing useful context.
+
+## Customization
+
+The extension also allows some customization of how the domain is displayed. 
+You can adjust the text color and font size by setting parameters in your Quarto document's metadata.
+
+For example, to style the domain in blue and set the font size to 12px, you can add this to your YAML header:
+
+```yaml
+domain_style:
+  color: "blue"
+  font_size: "14px"
+```
+
+This helps integrate the preview into different styles and formats without disrupting the overall design of the document.
+
+
+## Install
+
+```bash
+quarto add schochastics/quarto-url-peek
+```
+
+This will install the extension under the `_extensions` subdirectory. 
+If you're using version control, you will want to check in this directory.
+
+## Summary
+
+This is really is just a small utility, but I think it can
+add context to external links without making the document visually noisy and 
+help readers identify trusted sources at a glance.
