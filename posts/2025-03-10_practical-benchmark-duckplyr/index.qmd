@@ -1,0 +1,215 @@
+---
+title: "A practical benchmark of duckplyr"
+author:
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2025-03-10'
+categories:
+- R
+- data analysis
+---
+
+Benchmarking is hard and it is really tricky to find the right type of data and settings to make a truly fair comparison of different approaches to achieve the same thing. I have seen enough heated discussions on social media. I am still curious how the shiny new version of [duckplyr](https://github.com/tidyverse/duckplyr) compares to other established data wrangling libraries in R. However, I will not attempt to do any rigorous performance analysis. This post is only driven by a practical interest of mine: I need fast summarization and fast joins. So the results may not paint the full picture.
+
+## Libraries
+
+I will just do a lazy introduction of all packages and simply paste short paragraphs from GitHub. If you are new to a package, please checkout the respective repository for more help.
+
+### dplyr  
+[dplyr](https://dplyr.tidyverse.org/) is a grammar of data manipulation, providing a consistent set of verbs that help you solve the most common data manipulation challenges
+
+### duckplyr
+The [duckplyr](https://duckplyr.tidyverse.org/) package will run all of your existing dplyr code with identical results, using [DuckDB](https://duckdb.org/) where possible to compute the results faster. In addition, you can analyze larger-than-memory datasets straight from files on your disk or from the web.
+
+### data.table
+[data.table](https://github.com/Rdatatable/data.table) provides a high-performance version of base R's data.frame with syntax and feature enhancements for ease of use, convenience and programming speed.
+
+### polars
+The [polars](https://github.com/pola-rs/r-polars) package for R gives users access to a lightning fast Data Frame library written in [Rust](https://www.pola.rs/).
+
+### tidypolars
+[tidypolars](https://github.com/etiennebacher/tidypolars/) provides a polars backend for the tidyverse. The aim of tidypolars is to enable users to keep their existing tidyverse code while using polars in the background to benefit from large performance gains. 
+
+### collapse
+[collapse](https://github.com/SebKrantz/collapse) is a large C/C++-based package for data transformation and statistical computing in R. It aims to:
+
+- Facilitate complex data transformation, exploration and computing tasks in R.
+- Help make R code fast, flexible, parsimonious and programmer friendly.
+
+### Personal thoughts
+
+I find the concepts of `duckplyr` and `tidypolars` truly amazing. You essentially get performance upgrades for free when you have been working with `dplyr`. So there is (almost) no refactoring needed. 
+
+`data.table` was my first shift away from the tidyverse around 5 years ago. My football side project had grown to a size that made working with `dplyr` slightly annoying because certain operations just took to long. I did a major refactoring of the code base and since then, the project runs on `data.table`. Working with its syntax though can be a challenge and might not be intuitive for everybody (I too have to look up syntax all the time) 
+
+I do like Rust and I have been experimenting with it a lot, mostly to get it to work with [R](https://blog.schochastics.net/#category=Rust). So it may come as no surprise that I do like `polars`. Similar to `data.table`, its syntax might not be as straightforward, but thats what we now have `tidypolars` for. 
+
+While I never really used `collapse`, I do have mad respect for its main developer, Sebastian Krantz. I'd encourage you to read his blog posts on [collapse 2.0](https://sebkrantz.github.io/Rblog/2023/10/17/releasing-collapse-2-0-blazing-fast-joins-reshaping-and-enhanced-r/) and on 
+[the state of the fastverse](https://sebkrantz.github.io/Rblog/2023/04/12/collapse-and-the-fastverse-reflecting-the-past-present-and-future/).
+
+```{r}
+#| label: libraries
+#| message: false
+#| warning: false
+
+library(dplyr)
+library(duckplyr)
+library(data.table)
+library(polars)
+library(tidypolars)
+library(collapse)
+
+packageVersion("dplyr")
+packageVersion("duckplyr")
+packageVersion("data.table")
+packageVersion("polars")
+packageVersion("tidypolars")
+packageVersion("collapse")
+```
+
+## Data
+
+The data I am using is a set of ~1 million football game results around the world. You can find the data on [GitHub](https://github.com/schochastics/football-data) (This data set is part of my [worldclubratings](http://worldclubratings.net) side project.).
+
+
+```{r}
+#| label: data
+data <- nanoparquet::read_parquet("games.parquet")
+str(data)
+```
+
+I am not going to measure the time it takes to convert the data to the needed format of the packages but just do it beforehand
+
+```{r}
+#| label: convert-data
+data_tbl <- data
+data_duck <- as_duckdb_tibble(data)
+data_dt <- as.data.table(data)
+data_pl <- as_polars_df(data)
+
+```
+
+## Summarise
+
+The summarise task is pretty simple: Calculate the average number of goals scored at home for each team.
+
+```{r}
+#| label: bench-summarise
+res <- microbenchmark::microbenchmark(
+  times = 100,
+  dplyr = data_tbl |> summarise(mgh = mean(gh), .by = home),
+  duckdb = data_duck |> summarise(mgh = mean(gh), .by = home),
+  tidypolars = data_pl |> summarise(mgh = mean(gh), .by = home),
+  data.table = data_dt[, .(mgh = mean(gh)), by = .(home)],
+  rpolars = data_pl$group_by("home")$agg(
+    pl$col("gh")$mean()$alias("mgh")
+  ),
+  collapse = data_tbl |> fgroup_by(home) |> fsummarise(mgh = mean(gh))
+)
+ggplot2::autoplot(res, order = "median")
+```
+
+
+```{r}
+#| echo: false
+reorderMicrobenchmarkResults <- function(res, order = "median") {
+  stopifnot(
+    "Argument 'res' must be a 'microbenchmark' result" = inherits(
+      res,
+      "microbenchmark"
+    )
+  )
+
+  smry <- summary(res)
+  res$expr <- factor(
+    res$expr,
+    levels = levels(res$expr)[order(smry[["median"]])],
+    ordered = TRUE
+  )
+  res
+}
+
+summary(reorderMicrobenchmarkResults(res)) |> knitr::kable()
+```
+
+It is quite impressive how `duckplyr` is an order of magnitude faster than every other library. `data.table` and `rpolars` are the next fastest. Notably, there seems to be some overhead for the `tidypolars` package which loses some of the speed of `rpolars`. On has to note here though that both polars based packages are still under heavy development.
+
+## Join
+
+The task for the join test os also quite straightforward. Calculate the average number of goals at home and away per team and join the resulting tables. For this task, we need to create individual join functions.
+
+
+```{r}
+#| label: join-functions
+join_dplyr <- function(df) {
+  home <- df |>
+    summarise(mgh = mean(gh), .by = home) |>
+    rename(team = home)
+  away <- df |>
+    summarise(mga = mean(ga), .by = away) |>
+    rename(team = away)
+  full_join(home, away, by = "team")
+}
+
+join_duck <- join_tpl <- join_dplyr
+
+join_dt <- function(df) {
+  home <- df[, .(mgh = mean(gh)), by = .(home)]
+  away <- df[, .(mga = mean(ga)), by = .(away)]
+  setnames(home, "home", "team")
+  setnames(away, "away", "team")
+  setkey(home, team)
+  setkey(away, team)
+  home[away, on = .(team), all = TRUE]
+}
+
+join_pl <- function(df) {
+  home <- data_pl$group_by("home")$agg(pl$col("gh")$mean()$alias("mgh"))
+  away <- data_pl$group_by("away")$agg(pl$col("ga")$mean()$alias("mga"))
+  home <- home$rename("home" = "team")
+  away <- away$rename("away" = "team")
+  home$join(away, on = "team", how = "full")
+}
+
+join_collapse <- function(df) {
+  home <- df |>
+    fgroup_by(home) |>
+    fsummarise(mgh = mean(gh)) |>
+    frename(team = home)
+  away <- df |>
+    fgroup_by(away) |>
+    fsummarise(mga = mean(ga)) |>
+    frename(team = away)
+  join(home, away, on = "team", how = "full", verbose = 0)
+}
+
+```
+
+Here you see the advantage of `tidypolars` and `duckplyr`. Both can simply reuse the `dplyr` function and the packages do the magic in the background.
+
+
+```{r}
+res <- microbenchmark::microbenchmark(
+  times = 100,
+  dplyr = join_dplyr(data_tbl),
+  duckplyr = join_dplyr(data_duck),
+  tidypolars = join_tpl(data_pl),
+  data.table = join_dt(data_dt),
+  rpolars = join_pl(data_pl),
+  collapse = join_collapse(data_tbl)
+)
+
+ggplot2::autoplot(res, order = "median")
+```
+
+
+```{r}
+#| echo: false
+summary(reorderMicrobenchmarkResults(res)) |> knitr::kable()
+```
+
+The results remain pretty much the same as before. `duckplyr` is much faster than the remaining libraries, with `rpolars` and `data.table` on a similar level as the second best options.
+
+## Summary
+
+As I said in the beginning, this was not a very comprehensive benchmark, but tailored to my personal use case scenarios. I would be really interested in more rigorous benchmarks but till then, I will happily switch to `duckplyr` for my backend.
