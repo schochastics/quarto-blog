@@ -9,7 +9,12 @@ categories:
 - data analysis
 ---
 
-Benchmarking is hard and it is really tricky to find the right type of data and settings to make a truly fair comparison of different approaches to achieve the same thing. I have seen enough heated discussions on social media. I am still curious how the shiny new version of [duckplyr](https://github.com/tidyverse/duckplyr) compares to other established data wrangling libraries in R. However, I will not attempt to do any rigorous performance analysis. This post is only driven by a practical interest of mine: I need fast summarization and fast joins. So the results may not paint the full picture.
+Benchmarking is hard and it is really tricky to find the right type of data and settings to make a truly fair comparison of different approaches to achieve the same thing. 
+I have seen enough heated discussions on social media. 
+I am still curious how the shiny new version of [duckplyr](https://github.com/tidyverse/duckplyr) compares to other established data
+wrangling libraries in R. However, I will not attempt to do any rigorous performance analysis. 
+This post is only driven by a practical interest of mine: I need fast summarization and fast joins. 
+So the results may not paint the full picture.
 
 ## Libraries
 
@@ -28,23 +33,36 @@ The [duckplyr](https://duckplyr.tidyverse.org/) package will run all of your exi
 The [polars](https://github.com/pola-rs/r-polars) package for R gives users access to a lightning fast Data Frame library written in [Rust](https://www.pola.rs/).
 
 ### tidypolars
-[tidypolars](https://github.com/etiennebacher/tidypolars/) provides a polars backend for the tidyverse. The aim of tidypolars is to enable users to keep their existing tidyverse code while using polars in the background to benefit from large performance gains. 
+[tidypolars](https://github.com/etiennebacher/tidypolars/) provides a polars backend for the tidyverse. 
+The aim of tidypolars is to enable users to keep their existing tidyverse code while using polars in the background to benefit 
+from large performance gains. 
 
 ### collapse
-[collapse](https://github.com/SebKrantz/collapse) is a large C/C++-based package for data transformation and statistical computing in R. It aims to:
+[collapse](https://github.com/SebKrantz/collapse) is a large C/C++-based package for data transformation and statistical computing in R. 
+It aims to:
 
 - Facilitate complex data transformation, exploration and computing tasks in R.
 - Help make R code fast, flexible, parsimonious and programmer friendly.
 
 ### Personal thoughts
 
-I find the concepts of `duckplyr` and `tidypolars` truly amazing. You essentially get performance upgrades for free when you have been working with `dplyr`. So there is (almost) no refactoring needed. 
+I find the concepts of `duckplyr` and `tidypolars` truly amazing. 
+You essentially get performance upgrades for free when you have been working with `dplyr`. 
+So there is (almost) no refactoring needed. 
 
-`data.table` was my first shift away from the tidyverse around 5 years ago. My football side project had grown to a size that made working with `dplyr` slightly annoying because certain operations just took to long. I did a major refactoring of the code base and since then, the project runs on `data.table`. Working with its syntax though can be a challenge and might not be intuitive for everybody (I too have to look up syntax all the time) 
+`data.table` was my first shift away from the tidyverse around 5 years ago. 
+My football side project had grown to a size that made working with `dplyr` slightly annoying 
+because certain operations just took to long. I did a major refactoring of the code base and since then, 
+the project runs on `data.table`. Working with its syntax though can be a challenge and might not be intuitive for 
+everybody (I too have to look up syntax all the time). 
 
-I do like Rust and I have been experimenting with it a lot, mostly to get it to work with [R](https://blog.schochastics.net/#category=Rust). So it may come as no surprise that I do like `polars`. Similar to `data.table`, its syntax might not be as straightforward, but thats what we now have `tidypolars` for. 
+I do like Rust and I have been experimenting with it a lot, 
+mostly to get it to work with [R](https://blog.schochastics.net/#category=Rust). 
+So it may come as no surprise that I do like `polars`. Similar to `data.table`, its syntax might not be as straightforward, 
+but thats what we now have `tidypolars` for. 
 
-While I never really used `collapse`, I do have mad respect for its main developer, Sebastian Krantz. I'd encourage you to read his blog posts on [collapse 2.0](https://sebkrantz.github.io/Rblog/2023/10/17/releasing-collapse-2-0-blazing-fast-joins-reshaping-and-enhanced-r/) and on 
+While I never really used `collapse`, I do have mad respect for its main developer, Sebastian Krantz. 
+I'd encourage you to read his blog posts on [collapse 2.0](https://sebkrantz.github.io/Rblog/2023/10/17/releasing-collapse-2-0-blazing-fast-joins-reshaping-and-enhanced-r/) and on 
 [the state of the fastverse](https://sebkrantz.github.io/Rblog/2023/04/12/collapse-and-the-fastverse-reflecting-the-past-present-and-future/).
 
 ```{r}
@@ -69,7 +87,9 @@ packageVersion("collapse")
 
 ## Data
 
-The data I am using is a set of ~1 million football game results around the world. You can find the data on [GitHub](https://github.com/schochastics/football-data) (This data set is part of my [worldclubratings](http://worldclubratings.net) side project.).
+The data I am using is a set of ~1 million football game results around the world. 
+You can find the data on [GitHub](https://github.com/schochastics/football-data) 
+(This data set is part of my [worldclubratings](http://worldclubratings.net) side project.).
 
 
 ```{r}
@@ -132,7 +152,13 @@ reorderMicrobenchmarkResults <- function(res, order = "median") {
 summary(reorderMicrobenchmarkResults(res)) |> knitr::kable()
 ```
 
-It is quite impressive how `duckplyr` is an order of magnitude faster than every other library. `data.table` and `rpolars` are the next fastest. Notably, there seems to be some overhead for the `tidypolars` package which loses some of the speed of `rpolars`. On has to note here though that both polars based packages are still under heavy development.
+It is quite impressive how `duckplyr` is an order of magnitude faster than every other library. 
+`data.table` and `rpolars` are the next fastest. Notably, there seems to be some overhead for the 
+`tidypolars` package which loses some of the speed of `rpolars`.
+One has to note here though that both polars based packages are still under heavy development. Also,
+as the author Etienne points out in the comments, the overhead is constant so as soon as you work with really
+large data, you will not notice the difference as much anymore.
+
 
 ## Join
 
