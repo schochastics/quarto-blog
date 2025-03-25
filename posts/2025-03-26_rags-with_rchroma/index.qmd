@@ -1,0 +1,322 @@
+---
+title: "R with RAGS: An Introduction to rchroma and ChromaDB"
+author:
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2025-03-26'
+categories:
+- R
+- data analysis
+- RAGs
+---
+
+In the fast-moving world of large language models (LLMs), tools that help ground models in real, context-aware information are rapidly growing in importance. One of the most powerful of these tools is retrieval-augmented generation (RAG) — a technique that allows LLMs to retrieve relevant documents at generation time, rather than relying solely on their internal (and often outdated) knowledge.
+
+Thanks to the package [rchroma](https://github.com/cynkra/rchroma), you can now bring high-performance, vector-based retrieval also into your R workflows, backed by [ChromaDB](https://www.trychroma.com/).
+
+![](rchroma.png)
+
+## What are RAGs?
+
+In traditional LLM usage, the model answers a question based solely on what it learned during training. This can work well — but it has serious limitations:
+- LLMs may not know recent events or updates
+- They may “hallucinate” facts when unsure
+- You can’t give them custom/private context without fine-tuning
+
+RAG can overcome these issues.
+
+A RAG pipeline works like this:
+1. A user asks a question: “How does the billing system in our API work?”
+2. The system retrieves relevant documents (e.g., markdown files, logs, internal wiki pages)
+3. The LLM is given both the question and those retrieved documents
+4. The LLM then generates an answer grounded in actual knowledge
+
+It’s like giving the model its own mini search engine — one that only looks through your data.
+
+The following table summarizes some of the differences
+
+| Feature              | General LLM            | RAG System                              |
+|----------------------|------------------------|------------------------------------------|
+| Source of knowledge  | Trained model weights  | Retrieved documents + model              |
+| Updates with new info| Needs re-training      | Can retrieve new docs immediately        |
+| Hallucination risk   | Higher                 | Reduced — answers grounded in context    |
+| Use with private data| Difficult              | Easy — just feed relevant docs at query time |
+
+## ChromaDB: A vector database
+
+At the heart of every RAG pipeline is a vector database — a system that stores high-dimensional embeddings of text and lets you search by meaning, not just keywords.
+
+ChromaDB is one of the most powerful and accessible vector stores out there:
+It is fast, lightweight, and open-source. It can easily be run locally via Docker and fully supports filtering, metadata, and semantic search. It also integrates well with popular embedding models (OpenAI, Hugging Face, etc.), a key component for a RAG system.
+
+With ChromaDB, you can store 10,000s or even millions of text chunks, and instantly find the most relevant ones for any query — all by comparing their embeddings.
+
+## Introducing rchroma
+
+rchroma is an R interface to ChromaDB with which you can connect to
+a running (Docker) Chroma instance and use the API to create collections, store documents + metadata + embeddings and query by embedding to find the most relevant documents.
+
+`rchroma` has an inbuilt convenience function to start a docker container which runs chromadb. 
+```{r}
+#| label: load-chroma
+#| eval: false
+library(rchroma)
+chroma_docker_run()
+```
+
+```{r}
+#| echo: false
+library(rchroma)
+```
+
+The functions has many arguments but the defaults are sensible and don't need to be changed under normal circumstances. The only argument worth considering changing is `volumne_host_dir` which specifies where the database should be stored.
+
+To connect to the running Docker container, simply use `chroma_connect()`
+```{r}
+#| label: start-client
+client <- chroma_connect()
+client
+```
+
+Now we are set to start adding data to a database.
+
+## Example 
+In the following example, we use wikipedia articles of philosophers to create a knowledge base for our experiment. The (folded) code below shows how to retrieve the articles.
+
+```{r}
+#| eval: false
+#| code-fold: true
+library(rvest)
+library(dplyr)
+library(stringr)
+library(purrr)
+library(tibble)
+
+philosophers <- c(
+  # Classical Western
+  "Plato",
+  "Aristotle",
+  "Socrates",
+  "Epicurus",
+  "Pythagoras",
+  # Medieval
+  "Augustine_of_Hippo",
+  "Thomas_Aquinas",
+  "Boethius",
+  "Avicenna",
+  "Maimonides",
+  # Early Modern
+  "René_Descartes",
+  "Baruch_Spinoza",
+  "John_Locke",
+  "David_Hume",
+  "Immanuel_Kant",
+  # 19th Century
+  "Georg_Wilhelm_Friedrich_Hegel",
+  "Arthur_Schopenhauer",
+  "Karl_Marx",
+  "Friedrich_Nietzsche",
+  "John_Stuart_Mill",
+  # 20th Century / Contemporary
+  "Ludwig_Wittgenstein",
+  "Bertrand_Russell",
+  "Martin_Heidegger",
+  "Jean-Paul_Sartre",
+  "Simone_de_Beauvoir",
+  "Michel_Foucault",
+  "Hannah_Arendt",
+  "Jacques_Derrida",
+  "Jürgen_Habermas",
+  "Richard_Rorty",
+  # Non-Western Philosophers
+  "Confucius",
+  "Laozi",
+  "Zhuangzi",
+  "Nagarjuna",
+  "Adi_Shankara",
+  "Mencius",
+  "Al-Farabi",
+  "Ibn_Rushd",
+  "Wang_Yangming",
+  "Dogen"
+)
+
+uuid <- function() {
+  shortuuid::uuid_to_bitcoin58(shortuuid::generate_uuid())
+}
+
+get_philosopher_article_with_metadata <- function(title) {
+  url <- paste0("https://en.wikipedia.org/wiki/", title)
+  page <- tryCatch(read_html(url), error = function(e) NULL)
+  if (is.null(page)) {
+    return(NULL)
+  }
+
+  # Get readable title
+  readable_title <- str_replace_all(title, "_", " ")
+
+  # Extract text content (paragraphs)
+  content <- page |>
+    html_elements("#mw-content-text .mw-parser-output > p") |>
+    html_text2()
+
+  content <- content[nchar(content) > 100] # Filter out short/noisy chunks
+
+  # Extract infobox rows
+  infobox_rows <- page |>
+    html_element(".infobox") |>
+    html_elements("tr")
+
+  # Helper to extract values
+  extract_row_value <- function(label) {
+    value <- infobox_rows |>
+      keep(~ str_detect(html_text2(.x), fixed(label))) |>
+      html_elements("td") |>
+      html_text2()
+    if (length(value) > 0) value[[1]] else NA
+  }
+
+  metadata <- list(
+    name = readable_title,
+    birth = extract_row_value("Born"),
+    died = extract_row_value("Died"),
+    region = extract_row_value("Region"),
+    school_tradition = extract_row_value("School"),
+    main_interests = extract_row_value("Main interests"),
+    notable_ideas = extract_row_value("Notable ideas")
+  )
+  Sys.sleep(runif(1, 0.5, 1))
+  print(title)
+  # Return content + metadata for each chunk
+  tibble(
+    id = map_chr(seq_along(content), ~ uuid()),
+    title = readable_title,
+    chunk = seq_along(content),
+    content = content,
+    metadata = list(metadata)
+  )
+}
+
+philosopher_articles <- map_dfr(
+  philosophers,
+  get_philosopher_article_with_metadata
+)
+
+```
+
+```{r}
+#| echo: false
+library(rrag)
+philosopher_articles <- readRDS("phil.RDS")
+```
+
+We also need to calculate an embedding for each of the text chunks. There are many ways of doing this.
+
+The folded code below shows an example using `reticulate`. 
+```{r}
+#| eval: false
+#| code-fold: true
+
+reticulate::virtualenv_create("rchroma_env")
+reticulate::virtualenv_install(
+  "rchroma_env",
+  packages = c("sentence-transformers")
+)
+reticulate::use_virtualenv("rchroma_env", required = TRUE)
+sentence_transformers <- reticulate::import("sentence_transformers")
+model <- sentence_transformers$SentenceTransformer("all-MiniLM-L6-v2")
+
+embeddings <- model$encode(philosopher_articles$content)
+philosopher_articles$embedding <- lapply(
+  seq_len(nrow(philosopher_articles)),
+  function(i) embeddings[i, ]
+)
+```
+
+In the experiment I will use an unreleased R package prototype based on Ollama with a function `get_embedding()` that does not rely on Python.
+
+We now assume that we have a dataset that looks a little like the following.
+```{r}
+#| label: glimpse-data
+dplyr::glimpse(philosopher_articles)
+```
+
+Before pushing this into a database, we first create a new collection.
+
+```{r}
+#| echo: false
+#| label: delete-old
+tryCatch(delete_collection(client, "philosophers"),error=function(e) NULL)
+```
+```{r}
+#| label: create-collection
+create_collection(client, "philosophers")
+```
+
+Now we add all the documents to this collection, including metadata and embeddings.
+
+```{r}
+#| label: add_docs
+add_documents(
+  client,
+  collection_name = "philosophers",
+  documents = philosopher_articles$content,
+  ids = philosopher_articles$id,
+  metadatas = lapply(seq_len(nrow(philosopher_articles)), function(i) {
+    list(
+      title = philosopher_articles$title[i],
+      chunk = philosopher_articles$chunk[i]
+    )
+  }),
+  embeddings = philosopher_articles$embedding
+)
+```
+
+Now we can start asking questions. Note that we need to also embed the question.
+
+```{r}
+#| label: query-ex1
+query_text <- "What is the role of ethics in philosophy?"
+query_embedding <- get_embedding(query_text)
+```
+
+
+```{r}
+#| label: query-ex1-res
+result <- query(
+  client,
+  collection_name = "philosophers",
+  query_embeddings = list(query_embedding),
+  n_results = 3
+)
+
+purrr::map(result, unlist)$documents
+```
+
+```{r}
+#| label: query-ex2
+
+query_text <- "Can we truly know anything?"
+query_embedding <- get_embedding(query_text)
+
+result <- query(
+  client,
+  collection_name = "philosophers",
+  query_embeddings = list(query_embedding),
+  n_results = 3
+)
+
+purrr::map(result, unlist)$documents
+```
+
+
+To stop the docker container, simply call
+```{r}
+chroma_docker_stop()
+```
+
+## Summary
+
+So that’s a quick dive into the world of RAGs — and how you can start building them in R using `rchroma` and ChromaDB. We looked at what RAGs actually are, how they’re different from just prompting a big language model, and why having a vector database like ChromaDB is awesome. Then we got hands-on with a little example using Wikipedia philosopher data — because what better way to test semantic search than with some ancient wisdom?
+
+With `rchroma`, you can now start plugging in your own documents, support pages, logs, research notes — whatever you want your model to "know." It’s fast, flexible, and lot's of fun to play with.
