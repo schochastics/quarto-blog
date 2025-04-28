@@ -1,0 +1,216 @@
+---
+title: "Profiling dplyr pipelines"
+author:
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2025-04-29'
+categories:
+- R
+- data analysis
+---
+
+Recently I had to deal with refactoring some legacy R code. The code consisted of many long dplyr pipelines which were
+called over and over in an iterative process. The refactoring constraints were to not change the paradigm (so don't reimplement with, say, `data.table`)
+and keep the complexity low to ensure long term maintainability. While improving performance was not a primary concern, these constraints did pose an interesting challenge to see how much more efficient existing code can get without switching to a different framework and keeping the code readable.  
+
+In this blog post, I will talk about some odf the performance improving steps that I implemented. If you  are interested in profiling R code more generally, I recommend the chapter on that topic Hadley's book [Advanced R](http://adv-r.had.co.nz/Profiling.html). Nevertheless, I would like to start with some basics about profiling before jumping into the coding part.
+
+## What is Profiling?
+
+Profiling is the process of analyzing a program to measure aspects of its performance, particularly time and memory usage.
+Profiling helps to understand where code spends most of its computational resources, which functions are called most frequently, and where potential bottlenecks exist. The goal is not simply to “make things faster” but to identify the most significant contributors to inefficiency so that optimization efforts are focused and effective.
+
+## When is Profiling Useful?
+
+Profiling is particularly useful when:
+
+- **Performance is a concern**: When the code takes longer to execute than acceptable, especially in production systems.
+- **Resource limitations exist**: When high memory usage leads to crashes or excessive consumption of server resources.
+- **Optimizing for scalability**: When preparing code that needs to handle larger datasets or concurrent workloads.
+- **Prioritizing optimization**: Before refactoring or optimizing code, profiling ensures that effort is invested in the parts of the code that will yield the biggest improvements.
+
+Importantly, premature optimization — trying to speed up code without first profiling — often leads to wasted effort or even slower and more complex code.
+
+## When to stop Profiling
+
+You will obviously not be able to improve the performance of your code infinitely many times. You will eventually reach a point, where you find yourself spending more time improving performance than your code will run. In other words: Is it worth spending 4 hours to squeeze out 5 more seconds of runtime?
+An important part of profiling and improving code is to recognize when to stop. There are some basic rules you follow. 
+
+> The performance is acceptable for the operational needs
+
+If it is acceptable that your code needs 5 minutes to run, then why bother making it work in 4:30? If you feel like it is worth doing, think about the following.
+
+> The remaining inefficiencies are minor and not worth the extra complexity optimization would introduce 
+
+This follows the 80/20 rule — 80% of the performance gain often comes from optimizing 20% of the code. This rule is particularly 
+important when you write code for a client. You may pet your own shoulder about squeezing out that extra 30 seconds but the code needed is so complex, that
+the client will not be able to maintain the code for long. Even you may not understand your clever idea after a month (or even a week) anymore.
+To make it an explicit rule:
+
+> Further optimization compromises readability, maintainability, or correctness.
+
+Basically what I said before: Optimization always has a trade-off with code simplicity. Highly optimized code can become harder to understand and maintain, so balance is crucial.
+
+## Important (Best) Practices
+
+Effective profiling and optimization require a thoughtful approach. Below are some practices to ensure that your profiling activities are efficient and beneficial for long-term maintenance.
+
+First and foremost, it is important to **profile both before and after any changes**. Running a profiler on the original code provides a baseline measurement of the performance. This allows you to identify where the actual bottlenecks are, rather than relying on assumptions. After making changes, re-running the profiler will help to confirm that the changes had the intended effect. 
+
+In a data scientific context, this might not be the highest priority but in general, it is important to **prioritize algorithmic efficiency over minor code tweaks**. In other words, improving the underlying approach or algorithm typically yields far greater performance gains than micro-optimizations such as changing how loops are written or tweaking minor operations. Replacing a quadratic time algorithm with a linear time one will have a dramatic impact, while optimizing individual function calls within a poor algorithm will have limited effect.
+
+Another important practice (and one that I consistently fail to adhere to) is to **document profiling findings and optimization steps**. Each bottleneck identified, each change made, and each observed performance improvement should be recorded somewhere. This documentation ensures that future maintainers of the code understand why certain optimizations were made and prevents “optimization amnesia” — the phenomenon where performance-degrading changes are accidentally reintroduced because the reasons for the original optimization were forgotten.
+
+Additionally, it is essential to **avoid premature optimization**. Many parts of a system may be sufficiently fast already, and trying to optimize them can waste time, introduce bugs, and make code harder to read and maintain. You should resist the temptation to “make everything faster” and instead focus their efforts only on areas where performance is demonstrably inadequate. Always follow the stoping rules above and Donald Knuth: “Premature optimization is the root of all evil”.
+
+## Profiling dplyr pipelines
+
+With the theory out of the way, I want to show some small code improvements that had a large impact on the performance of the legacy code I was working with.
+Recall the setting: A series of dplyr pipelines that are called over and over in an iterative process (~50000 times). The thing to keep in mind here is that if a piece of code runs in around 0.5 second, which is more than acceptable if you run the code once, it takes 6 hours to run it 50000 times! If we can cut this to 0.05 seconds, we would already be at under an hour total runtime!
+
+```{r}
+#| label: dplyr
+#| warning: false
+#| message: false
+library(dplyr)
+```
+
+### Replace `if_else` for binary variables
+
+I tend to overuse `if_else` and so did the legacy code. The function is not bad in general, but in many instances, it can be replaced with a 
+more efficient computation. In my case, the `if_else` was replacing a value with zero depending on the status of a binary variable.
+
+This is what the data looked like.
+```{r}
+entities <- paste0("V", 1:300)
+n <- 1e5
+dat <- tibble(
+  name = sample(entities, n, replace = TRUE),
+  binary = sample(c(0L, 1L), n, replace = TRUE, prob = c(0.8, 0.2)),
+  value = round(runif(n, 100, 1000), 2)
+)
+```
+
+The task is to sum up the `value` column grouped by `name` but replacing `value` by zero depending on the value of `binary`. Below is the `if_else` solution.
+
+```{r}
+binary_ifelse <- function(dat) {
+  dat |>
+    group_by(name) |>
+    summarise(
+      value_1 = sum(
+        if_else(binary == 1, value, 0),
+        na.rm = TRUE
+      ),
+      value_0 = sum(
+        if_else(binary == 0, value, 0),
+        na.rm = TRUE
+      )
+    )
+}
+
+```
+
+This can be quite neatly replaced with a simple arithmetic computation which completely circumvents the use of `if_else()`
+```{r}
+binary_arithmetic <- function(dat) {
+  dat |>
+    group_by(name) |>
+    summarise(
+      value_1 = sum(binary * value, na.rm = TRUE),
+      value_0 = sum(
+        (1 - binary) * value,
+        na.rm = TRUE
+      )
+    )
+}
+
+```
+
+Let's benchmark this.
+```{r}
+bench::mark(
+  binary_ifelse(dat),
+  binary_arithmetic(dat)
+)
+```
+
+The arithmetic code is roughly 15 times faster. 
+Another `if_else` use case I have seen is to replace `NA` values. Here we can use dedicated functions such as `tidyr::replace_na` instead.
+
+
+```{r}
+dat$valueNA <- dat$value
+dat$valueNA[sample(1:n, floor(n / 50))] <- NA
+if_else_NA <- function(dat) {
+  dat |>
+    mutate(valueNA = if_else(is.na(valueNA), 0, valueNA))
+}
+
+replace_NA <- function(dat) {
+  dat |> mutate(valueNA = tidyr::replace_na(valueNA, 0))
+}
+
+bench::mark(
+  if_else_NA(dat),
+  replace_NA(dat)
+)
+
+```
+
+This is not too much of a performance gain, but arguably is more readable.
+
+### Precompute values
+
+So this one is not directly connected to `dplyr` pipelines but a more general advice for iterative processes. If at all possible, precompute values or create lookup dictionaries instead of reevaluate them within the iterations. My use case was a large data frame where in each iteration, a filter was run to obtain the relevant data points for the iteration step. This can actually be done beforehand by splitting the data frame, so that during the iteration, we just need to look up the relevant values.
+This is practically always more efficient than recomputing values.
+
+```{r}
+#| cache: true
+n <- 1e6
+dat <- tibble(
+  iter = sample(1:10000, size = n, replace = TRUE),
+  data = runif(n)
+)
+
+bench::mark(
+  filter = for (i in 1:10000) dat |> dplyr::filter(iter == i),
+  split = {
+    lst = split(dat, dat$iter)
+    for (i in 1:10000) {
+      lst[[i]]
+    }
+  },
+  check = FALSE,
+  iterations = 1
+)
+```
+
+Now this is an absolute killer for performance. Note that the lookup is basically free. The time is mostly spend on computing the split.
+
+### `select` can be slow
+
+Although slow is relative here, it was a bit of a surprise to me that replacing `select` with a base R equivalent did overall improve performance by quite a lot. Here is one example that had a large impact.
+
+```{r}
+n <- 1e4
+mat <- matrix(runif(15 * n), n, 15)
+colnames(mat) <- letters[1:15]
+dat_old <- as_tibble(mat)
+
+mat <- matrix(runif(10 * n), n, 10)
+colnames(mat) <- letters[1:10]
+
+dat_new <- as_tibble(mat)
+
+bench::mark(
+  dat_old |> select(-k, -l, -m, -n, -o),
+  dat_old[, !names(dat_old) %in% c("k", "l", "m", "n", "o")]
+)
+
+```
+
+In a world outside of thousands of iterations, I would pick `select` any day of the week. But removing it from key parts of the code did speed up the iterative process by a few minutes.
+
+## Conclusion
+
