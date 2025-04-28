@@ -212,5 +212,84 @@ bench::mark(
 
 In a world outside of thousands of iterations, I would pick `select` any day of the week. But removing it from key parts of the code did speed up the iterative process by a few minutes.
 
+### Combine consecutive `mutate` calls
+
+AFAIK, each call to `mutate` creates a copy of the data which adds unnecessary overhead. Combining them all in one call not only reduces the number of copies of the data but also improves readability.
+
+```{r}
+n <- 1e6
+dat <- tibble(
+  x = runif(n),
+  y = runif(n)
+)
+
+bench::mark(
+  check = FALSE,
+  many_mutate = dat |>
+    mutate(z1 = x * y) |>
+    mutate(z2 = z1 * runif(n)) |>
+    mutate(z2 = z2 * x) |>
+    mutate(x2 = x / y) |>
+    mutate(y2 = y * runif(n)),
+  one_mutate = dat |>
+    mutate(
+      z1 = x * y,
+      z2 = z1 * runif(n),
+      z2 = z2 * 4,
+      x2 = x / y,
+      y2 = y * runif(n)
+    )
+)
+```
+
+This really doesn't make much of a difference in terms of performance here, but given more complex tasks, this can provide some gains.
+
+### `filter` first
+
+In a long pipeline, make sure to `select` and `filter` as early is possible.
+Especially if the `mutate` computations are complex. Otherwise you are making your machine through away a lot of work.
+
+```{r}
+n <- 1e6
+dat <- tibble(
+  name = sample(letters, n, replace = TRUE),
+  value = runif(n)
+)
+bench::mark(
+  filter_last = dat |>
+    mutate(value = dplyr::if_else(value < 0.5, "low", "high")) |>
+    dplyr::filter(name == "a"),
+  filter_first = dat |>
+    dplyr::filter(name == "a") |>
+    mutate(value = dplyr::if_else(value < 0.5, "low", "high"))
+)
+
+```
+
+Note that this does not apply if you use `duckplyr`. This package does some smart query optimization and executes the commands in the most efficient way by itself. You will not gain anything by moving
+`filter` and `select` as much to the front as possible.
+
+<!-- ### avoid `arrange` if possible
+
+```{r}
+n <- 1e6
+dat <- tibble(
+  id = sample(1:n, n),
+  value = runif(n),
+  date = Sys.time() + sample(-(n / 2):(n / 2), n)
+)
+bench::mark(
+  check = FALSE,
+  arrange = dat |>
+    arrange(id) |>
+    mutate(rank = row_number()) |>
+    arrange(date) |>
+    mutate(time = row_number()),
+  dense_rank = dat |>
+    mutate(rank = dense_rank(id), time = dense_rank(date))
+)
+``` -->
+
 ## Conclusion
 
+[don't rbind](https://blog.schochastics.net/posts/2024-02-13_be-kind-dont-rbind/index.html)
