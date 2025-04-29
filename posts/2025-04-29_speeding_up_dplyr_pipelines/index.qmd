@@ -267,7 +267,7 @@ bench::mark(
 ```
 
 Note that this does not apply if you use `duckplyr`. This package does some smart query optimization and executes the commands in the most efficient way by itself. You will not gain anything by moving
-`filter` and `select` as much to the front as possible.
+`filter` and `select` as much to the front as possible in that case.
 
 <!-- ### avoid `arrange` if possible
 
@@ -290,6 +290,11 @@ bench::mark(
 )
 ``` -->
 
+### Don't grow dynamically
+
+I did not encounter it in my project but iterative processes are usually prone to have some variable being grown dynamically, which is a bad idea. I have blogged before about not using 
+[rbind](https://blog.schochastics.net/posts/2024-02-13_be-kind-dont-rbind/index.html) in these situations. The post also contains some suggestions on how to efficiently deal with such cases.
+
 ## Conclusion
 
-[don't rbind](https://blog.schochastics.net/posts/2024-02-13_be-kind-dont-rbind/index.html)
+Working with legacy code and additional constraints can be challenging but you may also learn a thing or two about how to optimize code without rewriting everything from scratch. At times, I was surprised about what harmless looking function can have bad impact on performance. For example the case of `select` came as a surprise. But as I said above, it was running the same `select` calls tenth of thousands of times that was an issue, not calling select once or twice.
