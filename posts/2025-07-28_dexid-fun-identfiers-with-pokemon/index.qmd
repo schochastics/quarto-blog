@@ -41,17 +41,23 @@ c(dexid(1, case = "kebab"),
 )
 ```
 
-For (almost) guaranteed uniqueness, you can add random digits to the end of the identifiers. This is useful when you need to ensure that the generated IDs are unique across different runs or contexts:
+For more uniqueness, you can either increase the number of added ajectives or add random digits to the end of the identifiers. This is useful when you need to ensure that the generated IDs are unique across different runs or contexts.
 
 ```{r}
+dexid(5, n_adj = 2)
 dexid(5, add_digits = TRUE)
 ```
+
+The package includes `r length(dexid:::adjectives)` adjectives and `r length(dexid:::pokemon)` Pokémon names, allowing for `r format(length(dexid:::adjectives) * length(dexid:::pokemon),big.mark = ",")` unique combinations with one adjective and `r format(length(dexid:::adjectives)^2 * length(dexid:::pokemon),big.mark = ",")` unique combinations with two adjectives.
+
 
 If you want to generate identifiers based on specific Pokémon generations, you can specify the `gen` argument. For example, to generate IDs from only Generation 1 Pokémon:
 
 ```{r}
 dexid(5, gen = 1)
 ```
+
+
 
 ## Fun Pokémon Sentences
 
