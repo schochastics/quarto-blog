@@ -1,0 +1,64 @@
+---
+title: "dexid: Fun Memorable Identifiers with Pokémon names"
+author:
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2025-07-28'
+categories:
+- R
+- package
+---
+
+The `dexid` package provides a playful way to generate readable identifiers by combining adjectives with Pokémon names. 
+This can be useful for naming test fixtures, docker containers, or any other situation where you need memorable IDs.
+
+![](dexid.png){fig-align="center"}
+
+You can install the development version from GitHub:
+
+```r
+pak::pak("schochastics/dexid")
+```
+
+## Basic Usage
+
+The main function `dexid()` generates snake_case IDs by default:
+
+```{r}
+library(dexid)
+
+dexid(5)
+```
+
+Using the `case` argument, you can change the style of the generated IDs. The function supports all cases available in the [`snakecase`](https://github.com/Tazinho/snakecase) package and kebab-case.
+
+```{r}
+c(dexid(1, case = "kebab"),
+  dexid(1, case = "small_camel"),
+  dexid(1, case = "upper_camel"),
+  dexid(1, case = "title"),
+  dexid(1, case = "all_caps")
+)
+```
+
+For (almost) guaranteed uniqueness, you can add random digits to the end of the identifiers. This is useful when you need to ensure that the generated IDs are unique across different runs or contexts:
+
+```{r}
+dexid(5, add_digits = TRUE)
+```
+
+If you want to generate identifiers based on specific Pokémon generations, you can specify the `gen` argument. For example, to generate IDs from only Generation 1 Pokémon:
+
+```{r}
+dexid(5, gen = 1)
+```
+
+## Fun Pokémon Sentences
+
+The package also includes a sentence generator that combines Pokémon with moves:
+
+```{r}
+dex_sentence(5, gen = 1)
+```
+
+The sentence structure is always adjective + Pokémon name + "uses" + move + adverb.
