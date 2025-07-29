@@ -30,14 +30,14 @@ library(dexid)
 dexid(5)
 ```
 
-Using the `case` argument, you can change the style of the generated IDs. The function supports all cases available in the [`snakecase`](https://github.com/Tazinho/snakecase) package and kebab-case.
+Using the `case` argument, you can change the style of the generated IDs. The function supports the following cases.
 
 ```{r}
 c(dexid(1, case = "kebab"),
-  dexid(1, case = "small_camel"),
-  dexid(1, case = "upper_camel"),
-  dexid(1, case = "title"),
-  dexid(1, case = "all_caps")
+  dexid(1, case = "camel"),
+  dexid(1, case = "caps"),
+  dexid(1, case = "sentence"),
+  dexid(1, case = "custom", delimiter = "|")
 )
 ```
 
@@ -56,8 +56,6 @@ If you want to generate identifiers based on specific Pokémon generations, you 
 ```{r}
 dexid(5, gen = 1)
 ```
-
-
 
 ## Fun Pokémon Sentences
 
