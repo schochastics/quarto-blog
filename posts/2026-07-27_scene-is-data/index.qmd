@@ -1,0 +1,85 @@
+---
+title: "vellumverse #6: A vellum scene is just a table of elements"
+author:
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2026-07-27'
+categories:
+- R
+- data visualization
+- vellumverse
+---
+
+Last post ended on a question: if a scene is a tree you can read back, what do
+you actually get when you read it? The answer is almost boringly plain, and that
+plainness is the point. You get a data frame, one row per drawn element. That
+table is the contract the whole ecosystem binds to, so this post is about the
+table.
+
+The function is `scene_model()`. Build a small keyed scene and read it back.
+
+```{r}
+library(vellum)
+
+s <- vl_scene(5, 3, bg = "white") |>
+  draw(points_grob(
+    x = c(0.25, 0.5, 0.75), y = c(0.4, 0.7, 0.4),
+    size = vl_unit(6, "mm"), gp = vl_gpar(fill = "#3498db", col = NA),
+    key  = c("a", "b", "c"),
+    meta = list(list(tooltip = "first"),
+                list(tooltip = "second"),
+                list(tooltip = "third"))
+  ))
+
+m <- scene_model(s)
+m$elements[, c("mark", "key", "x", "y", "w", "h")]
+```
+
+Two things rode along on that `points_grob()` without changing the picture at
+all. `key` is a data key per element, the join back to a row of your data. `meta`
+is a free-form record per element, here a tooltip string. `scene_model()` walks
+the rendered scene and returns one row per element of the keyable marks, pairing
+each element's identity (its key, its mark kind, its panel) with its resolved
+bounding box in device pixels. A second data frame, `m$panels`, does the same for
+named panels.
+
+The bounding box is the part you cannot get any other way. It comes from the
+compiled backend after layout, so it is where the element *actually landed*, not
+where you asked for it to go. That is what lets something outside the scene, a
+browser for instance, place a tooltip in exactly the right spot.
+
+Notice what did not happen. Adding `key` and `meta` changed not one pixel. The
+contract is strict about this: keys and metadata are pure identity, and a scene
+carrying them renders byte-for-byte identically to the same scene without them. A
+static PNG never even calls `scene_model()`. The interactivity is all opt-in
+metadata riding on top of an unchanged picture.
+
+Here is the shape of the whole ecosystem in three lines, and every arrow is this
+one table:
+
+```text
+vellumplot    compiles a plot into grobs carrying key + meta
+vellum        renders the SVG, and emits scene_model(): identity + bbox
+vellumwidget  reads the SVG + scene_model() to wire hover, select, brush
+```
+
+`vellumplot`, the grammar layer coming in the next post, does not reach into
+`vellum`'s internals. It emits grobs with keys on them. `vellumwidget`, the interactive
+layer, knows nothing about the grammar. It reads `scene_model()` and the matching
+SVG, zips them together by paint order, and attaches behaviour. The `mark`
+vocabulary is a closed set, the element order is guaranteed to match the SVG, and
+`vellum`'s own tests assert that the identity columns and the geometry columns
+enumerate the same elements in the same order. A mismatch is a hard error, never
+a silent mis-join.
+
+That is why I keep calling it a contract rather than an API. Three version-locked
+packages depend on this table's columns, its ordering, and its additivity, and
+pinning it down is what lets the grammar on top and the widget above that each be
+written against a stable seam without knowing how the other works.
+
+The series has stayed underground so far, down in the backend. `vellum` gives you
+primitives, viewports, units, a retained editable tree, and this read-back table.
+What it deliberately withholds is scales, geoms, and facets; those live one layer
+up. Next post I reach that layer and start building actual statistical plots with
+`vellumplot`, whose entire job is to compile a grammar down into the scene you
+have spent the last few posts getting to know.

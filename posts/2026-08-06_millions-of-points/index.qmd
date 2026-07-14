@@ -1,0 +1,75 @@
+---
+title: "vellumverse #12: Millions of points, honestly"
+author:
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2026-08-06'
+categories:
+- R
+- performance
+- vellumverse
+---
+
+Two things make plotting slow at scale: solving the layout, and drawing one
+object per data point. The last few posts covered the first, where the engine
+moved layout into Rust and solves it once. This post is about the second, which is
+a different problem. No engine speed saves you if the plot asks the renderer to
+draw two million individual circles. The SVG alone would be enormous, and most of
+those marks would land on the same pixel anyway.
+
+When you have more points than the screen has pixels, drawing each one is not just
+slow, it is dishonest. The dense regions saturate into a solid blob and the
+structure you meant to show vanishes under the overplotting. The fix is to stop
+drawing points and start drawing density.
+
+`mark_datashade()` bins the points into a grid the size of the output image,
+counts how many land in each cell, and colours the cells by that count. It returns
+one raster, not millions of marks. The binning is a single pass in Rust, so the
+cost scales with the number of pixels, not the number of points. Ten thousand
+points and ten million cost about the same to draw, because the output is the
+same-sized image either way.
+
+```{r}
+#| eval: false
+library(vellumverse)
+set.seed(1)
+n <- 1e6
+df <- data.frame(x = rnorm(n), y = rnorm(n) * 0.5 + rnorm(n))
+
+vplot(df) |>
+  mark_datashade(x = x, y = y)
+```
+
+A million points, drawn as a density field in constant time. The knob that most
+changes what you see is `how`, which maps cell counts to colour. The default
+`"eq_hist"` equalises the histogram so a few very dense cells do not wash out
+everything else; `"log"` and `"cbrt"` are gentler compressions, and `"linear"`
+uses raw counts. `colors` is the ramp from sparse to dense.
+
+The example I keep coming back to is in the gallery: 5.2 million NBA field-goal
+attempts, one facet per season from 2000 to 2025. Plotted as dots it is a
+saturated smear. Datashaded, with `facet_wrap()` running the aggregation per
+season and `coord_fixed()` holding each court to true proportions, the story is
+unmistakable. The mid-range cools to almost nothing over two decades, the rim
+stays hot, and a bright ring forms along the three-point arc. That is the Rust
+backend from the fourth post earning its keep: five million points is not five
+million objects, it is one binning pass and one raster per panel.
+
+There is a real trade to name. A datashaded image is a single raster, so its
+points are no longer individually addressable. You give up the per-element keys
+that made the last post's tooltips work. That is the right trade above the pixel
+threshold, where the individual points were invisible anyway, and the wrong one
+below it, where `mark_point()` keeps every point hoverable. The rule of thumb is
+just the pixel count: if the scatter has more points than the plot has pixels,
+datashade; if not, draw them.
+
+One more interaction bites people, so it is worth stating. Output format and data
+size are linked. A raster PNG is a fixed grid of pixels no matter how much data
+went in. A vector SVG or PDF stores every mark as an element, so a
+half-million-point scatter becomes a half-million-element file. For large data,
+render to raster, or datashade first so that even the vector output is a single
+embedded image.
+
+That is the last of the machinery. One post remains, the practical send-off: how
+to translate what you already know from `ggplot2`, and how to teach the ecosystem
+about a plot type of your own.

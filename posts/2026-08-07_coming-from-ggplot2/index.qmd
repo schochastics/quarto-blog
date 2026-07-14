@@ -1,0 +1,95 @@
+---
+title: "vellumverse #13: Coming from ggplot2, and plugging in your own"
+author:
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2026-08-07'
+categories:
+- R
+- data visualization
+- vellumverse
+---
+
+Thirteen posts in, here is the practical send-off. If you think in `ggplot2`, you
+already think in this grammar, and the gap between them is smaller than the length
+of this series makes it look. Four things differ, and after those it is mostly
+renaming.
+
+The pipe replaces the plus, so a plot is an ordinary pipeline whose first argument
+is the plot. There is no `aes()`: aesthetics are named arguments on the mark,
+where a bare column name maps through a scale and a literal is a constant, so
+`color = hp` draws a legend and `color = "red"` does not. Every `geom_*` becomes a
+`mark_*` with the same job. And, as the whole middle of this series laboured to
+show, a plot is a spec you can inspect, not a picture that has already drawn.
+
+Most of what you know transfers by find-and-replace:
+
+| ggplot2 | vellumplot |
+|---|---|
+| `ggplot(df, aes(x, y))` | `vplot(df)` then `mark_*(x = x, y = y)` |
+| `aes(color = z)` | `color = z` on the mark |
+| `+` | `\|>` |
+| `geom_point()`, `geom_smooth()` | `mark_point()`, `mark_smooth()` |
+| `geom_col()`, `geom_histogram()` | `mark_bar()`, `mark_histogram()` |
+| `facet_wrap(~z)`, `facet_grid(a ~ b)` | same names, same formulas |
+| `scale_*_manual(values = )` | `scale_*_manual(values = )` |
+| `theme_minimal()`, `labs(title = )` | same |
+| `ggsave("p.png")` | `render_plot(p, "p.png")` |
+
+So a scatter with a fitted line is the plot you would expect, with `+` swapped for
+`|>` and each mark carrying its own encodings rather than inheriting a shared
+`aes()`:
+
+```{r}
+#| eval: false
+library(vellumverse)
+vplot(mtcars) |>
+  mark_point(x = wt, y = mpg) |>
+  mark_smooth(x = wt, y = mpg, method = "lm")
+```
+
+A couple of habits do not carry over, on purpose. There is no global `aes()`
+shared across layers, so each mark states its own encodings: more typing on a
+multi-layer plot, and one fewer set of inheritance rules to hold in your head. In
+return you get two things `ggplot2` cannot easily give you. `summary(p)` prints a
+plot's structure without drawing it, and `as_widget(p)` makes the same plot
+interactive with no rewrite.
+
+That covers using the ecosystem. The last thing worth showing is how to extend it,
+because the seams the three layers agree on are open to you too. The deepest one is
+a single S7 generic, `as_vellum_scene()`, that every consumer calls to turn
+something into a scene. Register a method for your own object and it renders and
+goes interactive through the exact same machinery as a `vplot`.
+
+```{r}
+#| eval: false
+library(S7)
+
+my_plot <- function(data) structure(list(data = data), class = "my_plot")
+
+method(as_vellum_scene, new_S3_class("my_plot")) <- function(x, ...) {
+  vl_scene(4, 3, bg = "white") |>
+    push(vl_viewport(xscale = range(x$data$x), yscale = range(x$data$y))) |>
+    draw(points_grob(vl_unit(x$data$x, "native"), vl_unit(x$data$y, "native"),
+                     gp = vl_gpar(fill = "#6b4f2c")))
+}
+
+p <- my_plot(data.frame(x = 1:10, y = (1:10)^2))
+render(p, "custom.png")   # works
+as_widget(p)              # also works
+```
+
+That one method is the whole price of admission. `render()`, `render_plot()`, and
+`as_widget()` never learn what `my_plot` is; they see only the scene it compiles
+to, and everything downstream, the three output formats, the tooltips, the linked
+selection, comes along for free. It is the clearest case for why the ecosystem is
+split into layers at all: a new plot type built at the top inherits every
+capability built underneath.
+
+That is the series. It began as an idle question, whether R could lean on a Rust
+engine for graphics at all. Poking at `grid` turned up the one constraint behind
+most of its friction, and from there we built up a Rust scene graph, a retained
+editable tree, a compiler, and a grammar that renders one specification to a file
+or a widget without rewriting a line. If you want to try it, install `vellumverse`
+and start with a `vplot()`. Everything else in these thirteen posts is what
+happens after you print it.

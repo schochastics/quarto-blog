@@ -1,0 +1,74 @@
+---
+title: "vellumverse #4: Why vellum's engine is written in Rust"
+author:
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2026-07-23'
+categories:
+- R
+- rust
+- vellumverse
+---
+
+I have said "with a Rust backend" a few times now without earning it. This post
+is the why, and it matters because "a grid-like framework with a Rust backend"
+can mean two very different things. The difference is the whole design.
+
+The modest version is to be a graphics *device*. You let R's engine and `grid`
+stay in charge of the scene, the units, and the layout, and have Rust only
+rasterise the primitives handed down at the end. This is low risk, and you
+inherit the ecosystem for free, since everything already renders through devices.
+It also fixes none of the problems from the first post, because `grid` is still
+doing the layout and the late binding upstream. The `ragg` device is roughly
+this, and it is very good at being it.
+
+The ambitious version is to reimplement the model itself. You put the scene
+graph, unit resolution, layout, and rendering in Rust, and give R a thin
+declarative API that only describes what to draw. `vellum` takes this path. Look
+inside the crate and the files line up with the seven parts from two posts back:
+`scene.rs`, `units.rs`, `render.rs`, `font.rs`, and an `aggregate.rs` for the
+datashading path.
+
+Why take on all that work when the modest version is so much cheaper? Because of
+the one constraint from the first post. `grid` cannot know a grob's size until a
+device and a viewport exist at draw time, and that single fact is what forces
+lazy units, the draw-time hook protocol, and the display-list replay on every
+resize. The only way to remove it is to own the measurement stack, so that text
+can be measured and layout solved before anything draws. You cannot do that as a
+device sitting at the bottom of the stack. You have to move the model down.
+
+Controlling the stack buys a few things that the rest of the series leans on. The
+first is eager metrics: text has a width the moment you build a `text_grob()`,
+because `vellum` shapes it in process instead of asking whichever device happens
+to be current. Layout then becomes a single explicit pass keyed on the output
+size, and its result is a value you can compute without drawing. Resizing is
+relayout plus re-raster, not a replay of interpreted R. The second is
+determinism: rendering runs against a controlled rasterizer (`tiny-skia` for
+raster, `krilla` for PDF), so a scene produces identical pixels on every
+operating system and in CI. That is what makes the output snapshot-testable,
+which is awkward to promise when the result depends on the current device.
+
+Here is the part I want the Rust-curious among you to notice, because it runs
+against the "rewrite it all in Rust for speed" reflex. `vellum` does *not*
+reimplement font handling. It resolves and shapes text through the same
+`systemfonts` and `textshaping` machinery that `ragg` and `svglite` use, and only
+then hands the glyph outlines to a Rust library to fill or embed. Matching the
+rest of the R ecosystem was a hard requirement: output that drifted from
+`ggplot`-via-`ragg` would be useless however fast it rendered. The Rust is for
+the parts where owning the stack removes a constraint, not for the parts R
+already does well.
+
+None of this is free, and the bill is worth stating plainly. Rust is now a build
+dependency, so installing from source needs `cargo` and a recent `rustc`, a real
+cost for a plotting package. Reimplementing the model rather than wrapping a
+device means the existing ecosystem does not render through `vellum`
+automatically, so a separate translator (`as_vellum()`) exists to bridge `grid`
+and `ggplot2` output when you want it. And a backend in a second language is a
+maintenance commitment a pure-R package never signs up for.
+
+I think the trade is worth it for one reason. Every capability the rest of this
+series depends on, the retained editable scene, hit-testing, and one scene
+rendering to three formats, traces back to metrics being known up front. That
+property is what the Rust bought. Next post shows the first payoff, the one I
+would keep even if it were the only one: because the scene is retained, you can
+reach back into it and edit any piece by name.

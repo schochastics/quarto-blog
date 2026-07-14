@@ -1,0 +1,117 @@
+---
+title: "vellumverse #1: vellum began as an experiment"
+author:
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2026-07-17'
+categories:
+- R
+- data visualization
+- vellumverse
+---
+
+I want to be honest about where this came from, because it was not a grand plan.
+I had been writing more Rust and calling it from R for the odd
+performance-critical piece, or just for fun. One day, while I was [refactoring the plotting code of igraph](https://github.com/igraph/rigraph/pull/2711), I was wondering how difficult it would be to write a graphics engine in Rust and call it from R. I had no idea, but I was curious.  
+
+What I had in mind was not a plotting package but the layer underneath one, the
+part that turns primitives and coordinates into pixels. I did not know whether it was feasible, let alone whether it would be any
+good or fix anything. I just wanted to see.
+
+This series is what came out of that. The experiment went well enough that I kept
+pulling the thread, and `vellum` is where it ended up. Before I show you any of
+it, though, this first post is about what I was poking at, because you cannot
+judge an experiment without knowing what it was measured against.
+
+R already has two graphics systems. Base graphics draws straight to a device:
+every call paints immediately and nothing is kept. `grid`, written by Paul
+Murrell, keeps a model of the whole scene and has a real layout engine, and it is
+the foundation almost everything modern sits on: `lattice`, `ggplot2`, `gtable`,
+`patchwork`. It has held up for twenty years, which is about the strongest thing
+you can say for any piece of infrastructure. So "build another one" is a strange
+thing to attempt, and I should be clear that I never set out to replace `grid`. I
+set out to find whether I could, and to feel what a fresh start would be like.
+
+## What grid gets right
+
+Any honest experiment starts by respecting the thing it pokes at, and `grid`'s strengths are substantial.
+
+`grid` represents a plot as objects (grobs) arranged inside nested regions called
+viewports. A viewport is a rectangle with its own coordinate system and its own
+clipping, and viewports nest, so you can work in data coordinates in one place
+and fractions of the panel in another without redoing the arithmetic. Its unit
+system can express a length in centimetres, as a fraction of a region, or as the
+width of a particular string, and mix them freely. You can say "make this margin
+as wide as the widest axis label" and mean it. And because a `grid` scene targets
+an abstract device, the same code renders to screen, PDF, PNG, and SVG.
+
+That is a lot of good ideas in one place. `ggplot2` is a grammar compiled down to
+exactly these grobs and viewports, and it works beautifully.
+
+## The rough edges I was curious about
+
+I did have a few specific irritations in mind, the places where `grid` had made me
+work harder than felt necessary. The friction has a shape:
+
+```text
+Easy things are very easy.
+Medium-hard things are surprisingly hard.
+Hard things need you to know the internals.
+```
+
+The step from the first line to the second is steeper than it should be. Move a
+legend inside the third panel without clipping it. Align an annotation to the
+rendered axis title. Or reserve space for a custom element beside a facet. None
+of these are grammar questions, so `ggplot2` has no vocabulary for them, and none
+are primitive questions either, so you end up somewhere in between: naming grobs,
+walking viewport paths, editing `gtable` cells, flipping clip flags, and
+re-rendering to check whether it worked.
+
+The clearest evidence is the packages. Combining two plots, sharing one legend,
+adding a caption across a figure: common enough, and awkward enough at the
+`grid`/`gtable` level, that `gridExtra`, `cowplot`, `patchwork`, `egg`, and
+`ggplotify` all exist to smooth it over. Each one is well made. That they all had to be written is the tell.
+
+Another potential pain point are units. They are powerful because they resolve late, but
+that is also why "why is this panel this wide?" has no answer you can read off:
+the width does not exist until a font and a device do. And when a figure feels
+sluggish, the cause is often not the data but the sheer number of grobs being
+built, laid out, and replayed every time you resize the window. Going in, I had no
+idea whether a from-scratch engine could dodge any of this, or whether it was all
+essential to the problem. That was the actual question.
+
+## The one thing the experiment turned up
+
+Here is what I did not expect. Poke at those irritations long enough and they
+nearly all collapse into one constraint: in `grid`, a grob's size and content
+cannot be known until a device and a viewport exist at draw time. Text has no
+width before a device is open. A `native` unit needs a viewport scale. A flexible
+length needs a layout context. That single fact is what forces units to resolve
+late, forces the deferred grob-drawing protocol, and forces the whole display list
+to replay when you resize a window.
+
+To be fair to it, this is less a flaw than a decision, and a sound one for the era
+`grid` was built in. But it is load-bearing, and once you notice it you cannot
+stop noticing it. Most of the individual irritations are downstream of that one
+choice.
+
+Which turned the idle question into a sharper one, and answering it is the rest of
+this series. If you removed that constraint, so that a grob knew its own size the
+moment you built it, what would an R graphics layer feel like? Could Rust get you
+there by owning the measurement and rendering stack instead of deferring to
+whatever device is current? Some of `grid`'s rough edges seemed to smooth out when I
+tried. Others just became different trade-offs, and I will be straight about those when we reach them.
+
+## The AI in the room
+
+I should be upfront about one more thing: this project would not exist without AI.
+I might have reached a working graphics engine on my own, but it would have taken
+years rather than the few months it actually did, and the model pulled me out of
+plenty of dead ends along the way. If that sits badly with you, I understand the
+instinct. My own view is plain enough: it is a tool, an imperfect one, and here it
+got me to something worth writing about far sooner than I would have managed
+alone.
+
+Next post I set `vellum` aside for one more and name the seven parts every
+graphics engine is built from, so the pieces have names before I start swapping
+them out.

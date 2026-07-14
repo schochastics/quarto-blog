@@ -1,0 +1,69 @@
+---
+title: "vellumverse #2: The seven parts every graphics engine is made of"
+author:
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2026-07-20'
+categories:
+- R
+- data visualization
+- vellumverse
+---
+
+Last time the experiment turned up something: grid's friction traces to a single
+architectural decision, not to anything you are doing wrong. Before I can show you
+a different architecture, we need shared words for the pieces. Every graphics engine, whether it is base R, `grid`, the
+browser's canvas, or the `vellum` I am building toward, is made of the same
+handful of parts. Name them once and the rest of this series gets much shorter.
+
+A drawing *primitive* is the smallest thing you can put on a page: a line, a
+rectangle, a circle, a run of text, a filled polygon. Everything you have ever
+plotted is a pile of these. In `grid` they are grobs; in base they are the
+arguments to `lines()` and `rect()`. The primitives are an engine's alphabet.
+
+Primitives need somewhere to live, and that is the *coordinate system*. "Put a
+point at (3, 78)" means nothing until you know whether 3 is a data value, a
+fraction of the panel, or a millimetre from the corner. A *viewport* answers
+that: a rectangular region carrying its own coordinate system and its own
+clipping, and viewports nest, a panel inside a plot inside a page. This is the
+idea `grid` got most right, and every serious engine has some version of it.
+
+To place anything you need lengths, and lengths need a *unit system*. "5" is not
+a measurement. Five centimetres, five percent of the region, five line heights,
+and the width of the word "Population" are four different lengths, and a real
+engine lets you write each and mix them. Much of an engine's power lives here,
+and so does much of its confusion.
+
+That is enough to draw once. The next part is what divides base from everything
+modern: a *retained tree*. Base graphics forgets each primitive the instant it
+paints. `grid` keeps them, as a tree of nodes with parents and children, so the
+scene still exists as an object after it is built. Retaining the tree is what
+lets a plot be inspected, edited, re-rendered, and laid out, instead of being a
+one-way sequence of paint strokes.
+
+Nodes in that tree do not each restate their full styling. Colour, line width,
+and font are *graphical parameters*, and they inherit down the tree much as CSS
+inherits down the DOM: set the font on a group and every child draws with it
+unless it overrides. `grid` bundles these as `gpar`. Inheritance is what keeps a
+styled figure from being ten thousand copies of the same three settings.
+
+Nothing so far has decided how big anything is. That job is the *layout pass*: the
+step that takes the tree, the unit expressions, and the output size, and solves
+for where every region actually lands. Aligning facet panels, reserving room for
+the widest axis label, giving a legend its own column, all of it is layout. It is
+the hardest part to get right, and the part you notice only when it goes wrong.
+
+Finally something has to walk the laid-out tree and turn it into pixels or
+vectors. That is the *render pass*: one traversal of the tree, emitting to a
+device, producing the PNG, the SVG, or the PDF. Keep this walk cleanly separate
+from everything above it and a single scene can render to many formats from the
+same object.
+
+Seven parts, then: primitives, viewports, units, a retained tree, inherited
+parameters, a layout pass, and a render walk. Every engine on the list makes the
+same seven decisions. Where they differ is *when* each part does its work, and in
+particular when a length stops being an expression and becomes a number. `grid`
+answers "at draw time", and last time that single answer turned out to be where
+most of the friction comes from.
+
+Next post I open `vellum`, which answers it differently, and we finally draw something.

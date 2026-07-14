@@ -1,0 +1,82 @@
+---
+title: "vellumverse #11: Interactivity with no server"
+author:
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2026-08-04'
+categories:
+- R
+- data visualization
+- vellumverse
+---
+
+Several posts back, in the retained-mode post, I asked you to hold onto one idea:
+because a `vellum` scene is retained, you can reach back into it and edit any node
+by name. This is the post that spends it. Everything the interactive widget does is built on that one
+property, and it needs no server and no new drawing code.
+
+There is one verb. `as_widget()` turns a `vellumplot` plot (or a bare `vellum`
+scene) into a self-contained HTML widget that behaves the same in the RStudio
+viewer, a Quarto document, and a Shiny app. Every interaction runs in the
+browser, with no server and no round-trip.
+
+The interactivity is declared in the grammar rather than bolted on afterwards. A
+mark's `tooltip`, `data_id`, and `hover_group` are just more arguments, and they
+flow through the scene as the per-element metadata from the contract post. Hover a
+point and it shows its tooltip and dims the rest; `data_id` is the join key and
+`tooltip` is what the box says.
+
+```{r}
+#| eval: false
+library(vellumverse)
+df <- data.frame(wt = mtcars$wt, mpg = mtcars$mpg,
+                 model = rownames(mtcars), cyl = factor(mtcars$cyl))
+
+vplot(df) |>
+  mark_point(x = wt, y = mpg, color = cyl, tooltip = model, data_id = model) |>
+  as_widget()
+```
+
+That single call gets you hover tooltips, click-to-select (every mark sharing a
+`data_id` toggles together), rectangular brush-select, and pan/zoom by wheel,
+drag, touch, or arrow key, plus a toolbar with SVG and PNG export. Accessibility is
+on by default: you can Tab into the chart, arrow between marks with each announced
+through a live region, and select with Enter, and a visually-hidden data table
+backs it all for screen readers.
+
+Here is the connection I want to make explicit. None of that required new drawing
+machinery. Recall how editing worked back in the retained-mode post: keep one
+scene, and on an interaction re-derive it with the touched node restyled, then
+re-render only the changed subtree. Hover and selection are exactly that, run in
+the browser. The widget knows which element you touched because every keyable mark
+carries a `key`, and it knows where each element sits because `scene_model()`
+handed it the device-pixel bounding box. Retained mode gave it addressability; the
+contract gave it the table. The widget is a thin client over the two.
+
+Because identity lives in the data keys rather than in pixels, linking views is
+nearly free. Two widgets that share a `group` highlight the same keys in each
+other, client-side, with no Shiny and no crosstalk:
+
+```{r}
+#| eval: false
+p <- vplot(df) |> mark_point(x = wt, y = mpg, data_id = model, hover_group = cyl)
+htmltools::tagList(
+  as_widget(p, group = "cars", width = 320, height = 240),
+  as_widget(p, group = "cars", width = 320, height = 240)
+)
+```
+
+Select in one, and the same cars light up in the other. To link against plotly,
+leaflet, or a DT table instead, pass a `crosstalk::SharedData` to `crosstalk =`
+and the same keys drive those too. And when you genuinely do need the server,
+`vellumwidgetOutput()` and `renderVellumwidget()` report the selection, clicks,
+hovers, and brush back to Shiny as reactive inputs, keyed the same way.
+
+The thing to take from this is how little had to be added. The backend was already
+retained and addressable, and the scene already carried keys and geometry, so
+"make it interactive" turned out to be a browser reading a table and restyling
+nodes. No server was ever in the picture.
+
+The next post pushes the opposite direction, toward scale: what to do when the
+data has more points than the screen has pixels, and drawing every one is the
+wrong move.

@@ -1,0 +1,95 @@
+---
+title: "vellumverse #5: The one superpower of keeping the scene around"
+author:
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2026-07-24'
+categories:
+- R
+- data visualization
+- vellumverse
+---
+
+If you take one idea from this series, make it this one. Everything interactive
+that comes later is a consequence of it, and it is the cleanest thing that falls
+out of putting the model in Rust.
+
+Most drawing APIs, `grid` included, are immediate mode: a call paints and
+forgets. The pixels exist afterwards; the thing that drew them does not. `vellum`
+is retained mode. The scene you build stays as a tree of nodes until you render
+it, and that tree is still there to be questioned and rewritten afterwards.
+
+Addressability starts with a name. Every grob takes an optional `name`, and a
+named node is one you can find again. Here is a bar chart of seven named
+rectangles.
+
+```{r}
+library(vellum)
+
+vals <- c(3, 5, 2, 8, 6, 4, 7)
+n <- length(vals); y0 <- 0.18
+base <- "#c9a874"; ink <- "#3a2f1e"
+
+scene <- vl_scene(7, 3.2, bg = "#faf5ea")
+for (i in seq_len(n)) {
+  h <- 0.62 * vals[i] / max(vals)
+  scene <- scene |>
+    draw(rect_grob(x = (i - 0.5) / n, y = y0 + h / 2,
+                   width = 0.7 / n, height = h, name = paste0("bar", i),
+                   gp = vl_gpar(fill = base, col = NA)))
+}
+scene <- scene |>
+  draw(segments_grob(x0 = 0.02, y0 = y0, x1 = 0.98, y1 = y0,
+                     gp = vl_gpar(col = ink, lwd = 1.5)))
+
+node_names(scene)
+```
+
+`node_names()` lists what is addressable, in paint order. `get_node()` hands one
+back so you can read its current state, which is ordinary R data rather than an
+internal handle.
+
+Editing works the way you would hope. To highlight the tallest bar, find its name
+and rewrite that one node's fill. No loop over the others, no rebuild of the
+scene.
+
+```{r}
+top <- paste0("bar", which.max(vals))
+highlighted <- edit_node(scene, top, gp = vl_gpar(fill = "#c1121f", col = NA))
+highlighted
+```
+
+`edit_node()` returns a *new* scene with the change applied; the original `scene`
+still shows every bar in the base colour. That copy-on-modify guarantee is what
+makes a scene safe to pass around: you can derive as many variants as you like
+from one base graph and none of them disturbs the others. The new tree shares
+structure with the old one underneath, so deriving a variant stays cheap even for
+a large scene.
+
+This is exactly how a host implements hover and selection later. It keeps one
+scene, and on each interaction re-derives it with the touched node restyled, then
+re-renders. Flag that node's viewport as a repaint boundary and only the changed
+subtree re-rasterises, so the update is cheap.
+
+Retention answers the inverse question too. `hit_test()` takes a point and tells
+you which node is drawn on top there.
+
+```{r}
+#| eval: false
+hit_test(scene, x = 0.5, y = 0.4)   # the bar under that point, by name
+```
+
+`grid` offered only `grid.locator()`, a single interactive click. Because a
+retained scene can be compiled into a colour pick-buffer, `hit_test()` is exact
+with respect to geometry, clipping, and paint order, and you can call it
+programmatically as often as you want. That is enough to route a click on the
+canvas back to the datum that drew the mark.
+
+Naming, editing, and hit-testing are three small functions, and together they are
+the difference between a picture and a thing you can interrogate. Later in the
+series, when a widget adds tooltips and brushing with no server involved, it will
+need no new drawing machinery. It will just be standing on this.
+
+Next: if a scene is a tree you can read back, what exactly do you get when you
+read it? The answer is a plain table, and it turns out to be the contract the
+entire ecosystem is built on.

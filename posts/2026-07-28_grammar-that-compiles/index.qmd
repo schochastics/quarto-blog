@@ -1,0 +1,77 @@
+---
+title: "vellumverse #7: A grammar of graphics that compiles"
+author:
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2026-07-28'
+categories:
+- R
+- data visualization
+- vellumverse
+---
+
+Five posts of backend, and we finally climb a layer. `vellum` gave us
+primitives, viewports, a retained tree, and a read-back table, and it stopped
+short of scales, geoms, and facets on purpose. Those live in `vellumplot`, the
+grammar of graphics that compiles down into a `vellum` scene, and that is where
+the rest of this series lives.
+
+If you know `ggplot2`, the first plot looks familiar.
+
+```{r}
+library(vellumplot)
+
+vplot(mtcars) |>
+  mark_point(x = wt, y = mpg, color = hp) |>
+  scale_color_continuous()
+```
+
+`vplot()` starts from a data frame, `mark_point()` adds a layer, and encodings
+like `x = wt` and `color = hp` are tidy-eval expressions evaluated against the
+data. The pipe replaces `+`, which fits R's native `|>` and reads left to right.
+
+The difference is underneath, and it is the one claim of this post: building that
+plot drew nothing. `vplot(...) |> mark_point(...)` returns a *spec*, a plain S7
+object recording the data, the layers, the scales, the facet, the coord, and the
+theme. It is a value, not a side effect, and you can look at it before you ever
+render it.
+
+```{r}
+p <- vplot(mtcars) |> mark_point(x = wt, y = mpg, color = hp)
+summary(p)
+```
+
+`ggplot2` does something similar, since a `ggplot` object is also built before it
+prints, so this is a matter of degree rather than a brand-new idea. But
+`vellumplot` leans on it much harder. The spec is designed to be inspected and
+serialized: it is the answer to "what will this draw?" available without drawing.
+A few consequences follow that I use constantly.
+
+A plot is an ordinary value, so you can treat it like one: build it inside a
+function and return it, keep a list of specs and render them in a loop, or pipe
+another mark onto a plot someone handed you. You can even save the spec to disk
+and rebuild the exact figure next month. None of these need a device open,
+because none of them draw.
+
+It also makes plots testable. You can assert on the spec, on how many layers it
+carries or which scale trained where, without rendering a pixel and diffing
+images. For a package with this many marks, that is the difference between a test
+suite that runs in milliseconds and one that shells out to a rasterizer.
+
+Nothing draws until you print the spec or call `render_plot()`. That is when a
+real compiler runs: it takes the spec and turns it into the `vellum` scene from
+the last few posts, then hands that scene to the backend. `vellumplot` never
+touches a graphics device itself. It produces a scene and steps back.
+
+```{r}
+#| eval: false
+render_plot(p, "cars.png")   # compile the spec, then render the scene
+```
+
+So the mental model is two clean halves. You *describe* a plot as data, and later
+a compiler *turns that description into a scene*. Everything good about the
+grammar layer, scales that span layers, faceting that does not redraw, and one
+plot rendering to three formats, comes from keeping those two halves apart.
+
+Next post I open the compiler and walk the stages it runs, from tidy-eval
+expressions to positioned `vellum` grobs.

@@ -1,0 +1,90 @@
+---
+title: "vellumverse #9: Marks and scales: the parts you actually touch"
+author:
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2026-07-31'
+categories:
+- R
+- data visualization
+- vellumverse
+---
+
+The last two posts were about machinery. This one is the opposite: the small
+surface you actually touch to make real plots, and how little of it there is.
+
+Start with the grammar rule that does the most work. Inside a `mark_*()`, a bare
+column name is an *encoding*, mapped through a scale, and a scalar is a
+*constant*. So `color = hp` colours points by the `hp` column and draws a legend,
+while `color = "red"` paints every point red and draws none. That one
+distinction, expression versus value, is most of what you need to read any
+`vellumplot` code.
+
+```{r}
+library(vellumplot)
+vplot(mtcars) |>
+  mark_point(x = wt, y = mpg, color = hp, size = 3)
+```
+
+`color = hp` maps; `size = 3` is a constant marker. Same function call, two kinds
+of argument.
+
+The marks come in a few families, and the names are boring on purpose. Points and
+lines are `mark_point()`, `mark_line()`, `mark_step()`, `mark_rule()`. Bars and
+areas are `mark_bar()` (heights, or a row count when you omit `y`), `mark_area()`,
+and `mark_ribbon()`. Intervals are `mark_errorbar()`, `mark_linerange()`, and
+`mark_segment()`. Tiles and bins are `mark_tile()`, `mark_hex()`, and
+`mark_bin2d()`. Then there is text, images, and the statistical marks
+(`mark_smooth()`, `mark_boxplot()`, `mark_contour()`) that compute something
+before they draw. On a normal day you reach for maybe six of these.
+
+Layering is where scales earn their keep. Pipe two marks and they share the
+trained axes automatically, because (as the last post showed) scales train across
+every layer before anything draws. A scatter with a fitted line is just two marks
+on one panel.
+
+```{r}
+peng <- na.omit(datasets::penguins)
+vplot(peng) |>
+  mark_point(x = bill_len, y = body_mass, color = species, alpha = 0.5) |>
+  mark_smooth(x = bill_len, y = body_mass, method = "lm", se = TRUE) |>
+  labs(title = "Linear smooth with confidence band",
+       x = "bill length (mm)", y = "body mass (g)")
+```
+
+The `color = species` encoding trains one discrete colour scale that both the
+points and the legend read from. `mark_smooth()` fits its linear model in the
+compiler's stat stage and draws the band on top. `labs()` sets the titles.
+Nothing here aligned an axis or placed a legend by hand.
+
+Scales are how you override the defaults when the automatic choice is wrong. Each
+aesthetic has a family of `scale_*()` functions (`scale_color_continuous()`,
+`scale_fill_gradient(low =, high =)`, `scale_fill_continuous(palette =)`, and so
+on). Add one to the pipe and it replaces the trained default for that aesthetic.
+A correlation matrix wants a diverging fill, so you say so.
+
+```{r}
+cm <- cor(mtcars[, c("mpg", "disp", "hp", "drat", "wt", "qsec")])
+hm <- expand.grid(v1 = rownames(cm), v2 = colnames(cm))
+hm$cor <- as.vector(cm)
+
+vplot(hm) |>
+  mark_tile(x = v1, y = v2, fill = cor) |>
+  scale_fill_gradient(low = "#b2182b", high = "#2166ac") |>
+  labs(title = "Correlation matrix", x = NULL, y = NULL)
+```
+
+`mark_tile()` draws a rectangle per `(x, y)` cell, `fill = cor` maps the
+correlation, and the explicit `scale_fill_gradient()` swaps the default
+continuous fill for a red-to-blue diverging ramp. A complete figure in five
+lines.
+
+That is genuinely most of the day-to-day API: `vplot()`, a mark or two, an
+encoding for each thing you want mapped, a `scale_*()` when the default is wrong,
+and `labs()`. Facets, coords, and themes are waiting when you need them, and the
+reference has the full catalogue, but the handful above gets real work done.
+
+We have built plots now. The next post cashes in the promise the series has been
+saving toward: this spec compiles to one `vellum` scene, and that single scene
+renders to a raster, a vector, or an interactive widget without you rebuilding a
+thing.

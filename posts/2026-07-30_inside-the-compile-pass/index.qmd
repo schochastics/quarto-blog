@@ -1,0 +1,74 @@
+---
+title: "vellumverse #8: Inside the compile pass: from spec to scene"
+author:
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2026-07-30'
+categories:
+- R
+- data visualization
+- vellumverse
+---
+
+Last post I said `vellumplot` builds a spec and a compiler turns it into a scene.
+This post opens the compiler. It is not a metaphor: printing a plot runs a
+genuine pipeline of stages, each consuming the output of the last, and the
+grammar's nicest properties fall out of the order they run in.
+
+Here is a plot with two layers and a mapped colour.
+
+```{r}
+library(vellumplot)
+p <- vplot(mtcars) |>
+  mark_point(x = wt, y = mpg, color = hp) |>
+  mark_smooth(x = wt, y = mpg)
+```
+
+When `p` renders, the compiler runs six stages, in this order:
+
+1. Resolve encodings. Evaluate the tidy-eval expressions (`x = wt`, `color = hp`)
+   against each layer's data, producing concrete columns of numbers and factors.
+2. Apply stats and positions. Marks with a statistical transform compute their
+   derived data here (the smooth fits its model), and position adjustments like
+   stack, dodge, and jitter are applied.
+3. Train scales. Scan the resolved values across every layer to find each scale's
+   domain, then build the mapping from data to colour, size, shape, and position.
+4. Measure layout. Lay out the panel, or the grid of facet panels, reserving room
+   for axes, strips, legends, and titles, and work out where everything lands.
+5. Compile guides. Emit the axes, gridlines, and legends the trained scales imply.
+6. Compile marks. Turn each layer into `vellum` grobs, positioned in the panel.
+
+Out the other end is a `vellum` scene: the retained, read-back tree from the
+earlier posts. The backend renders it to PNG, SVG, or PDF, and `vellumplot` is
+done.
+
+The order is not incidental. Three of the grammar's best properties are just
+consequences of it.
+
+Scales train after every layer's data is resolved, at stage 3, over all layers at
+once. That is the whole reason the point cloud and the fitted line in `p` land on
+one set of axes without you aligning anything. There is no drawing order to get
+wrong, because nothing has drawn yet when the domain is computed.
+
+Faceting is a layout question rather than a redraw. Splitting into panels happens
+at stage 4, over a spec whose data and scales are already resolved, so
+`facet_wrap()` reuses the same trained scales across every panel (or trains them
+free per panel if you ask) in a single compile. It does not build N plots and
+stitch them together.
+
+And because the whole thing is a function from spec to scene, you can look before
+you leap. `summary(p)` reported the structure a post ago without drawing anything.
+The compiler is what stands behind that promise: the spec genuinely contains the
+answer, and compilation is the pure computation that reveals it.
+
+If you want to read the real thing, it is not hidden. The pipeline lives in
+`R/seam.R` and the `R/compile-*.R` files inside `vellumplot`, roughly one file
+per stage and named about how you would guess (`compile-train.R`,
+`compile-layout.R`, `compile-guides.R`, `compile-marks.R`). The prose version is
+the [compiler article](https://r-vellum.github.io/vellumplot/articles/the-compiler.html);
+the code version is a good afternoon's read.
+
+The next post steps back from the machinery to the surface you actually touch:
+the handful of marks and scales it takes to make real plots. After that comes the
+payoff act, where the scene this compiler produces becomes a raster, a vector, or
+an interactive widget from one spec.

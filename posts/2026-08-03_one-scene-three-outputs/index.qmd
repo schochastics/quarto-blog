@@ -1,0 +1,91 @@
+---
+title: "vellumverse #10: One scene, three outputs"
+author:
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2026-08-03'
+categories:
+- R
+- data visualization
+- vellumverse
+---
+
+This is the post the whole series has been walking toward. Everything so far, the
+retained scene, the contract, the compiler, exists to make one move possible: you
+describe a plot once, and where it ends up is a decision you make at the end, not
+a fork you commit to at the start.
+
+Most plotting workflows re-specify the plot per destination. One code path for the
+PNG in a report, a different one for the vector figure a journal wants, and a
+third library entirely when the thing has to be interactive on the web. Those
+three drift over time, because they are three plots. Here the specification and
+the destination are separate concerns, joined by a single seam.
+
+Build the spec once. Notice that `tooltip` and `data_id` are declared right here,
+on the mark, even though a static render ignores them.
+
+```{r}
+library(vellumverse)
+
+df <- data.frame(wt = mtcars$wt, mpg = mtcars$mpg, model = rownames(mtcars))
+
+p <- vplot(df) |>
+  mark_point(x = wt, y = mpg, color = mpg, tooltip = model, data_id = model) |>
+  scale_color_continuous() |>
+  labs(title = "Fuel economy")
+```
+
+Nothing has drawn. `p` is a description. Now send it three places.
+
+Raster, for the report:
+
+```{r}
+#| eval: false
+render_plot(p, "fuel.png")
+render_plot(p, "fuel.png", dpi = 300)   # override the authored resolution
+```
+
+Vector, for the journal:
+
+```{r}
+#| eval: false
+render_plot(p, "fuel.svg")
+render_plot(p, "fuel.pdf")
+```
+
+Interactive, for the web:
+
+```{r}
+#| eval: false
+as_widget(p)
+```
+
+Same `p` every time. Under the hood, `render_plot()` and `as_widget()` both call
+one generic, `as_vellum_scene()`, which compiles the spec into the `vellum` scene
+from the middle of this series. Render walks that scene to a raster or vector
+file; the widget emits the scene's SVG plus the per-element table from the
+contract post and wires up behaviour. One spec, one compiled scene, three roads
+out.
+
+The payoff is more than fewer keystrokes. Because there is exactly one scene
+behind all three outputs, they cannot drift: the PNG in your paper and the widget
+on your blog are guaranteed to show the same plot, because they *are* the same
+scene, laid out once. Point positions, text metrics, and legend placement are
+computed a single time and then walked for each backend. The raster and the
+vector are one plot, not two approximations of it.
+
+The decision genuinely defers, too. You can write analysis code that returns a
+spec and hand it off, letting the calling context decide how to realise it: a
+Quarto chunk prints it, a Shiny app makes it a widget, a batch job writes a
+hundred PDFs. The function that built the plot never knew which.
+
+This works one layer down as well, without the grammar. A bare `vellum` scene
+built from grobs travels the same three roads, because `render()` and
+`as_widget()` accept a scene directly. The gallery's "one scene, three formats"
+entry does exactly that with a hand-built logo: one scene value, `render()` to
+PNG, SVG, and PDF, pixel-for-pixel agreement. The grammar in `vellumplot` is, in
+the end, a convenient way to produce one of these scenes.
+
+That is the thing the experiment was really testing, and it held up. The next
+post takes the third road seriously: what the interactive widget actually does,
+and why it needs no server and no new drawing code at all.

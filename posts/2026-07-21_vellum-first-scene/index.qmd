@@ -1,0 +1,94 @@
+---
+title: "vellumverse #3: vellum, where a scene is a value you can hold"
+author:
+- name: David Schoch
+  orcid: 0000-0003-2952-4812
+date: '2026-07-21'
+categories:
+- R
+- data visualization
+- vellumverse
+---
+
+[Two posts back](https://blog.schochastics.net/posts/2026-07-17_two-graphics-systems/index.html) I described the experiment this all started as. [In the last post](https://blog.schochastics.net/posts/2026-07-20_inside-a-graphics-engine/index.html), I
+named the seven parts a graphics engine is built from. Now I get to show you `vellum`,
+which builds those seven parts in Rust and hands R a small declarative API on top.
+This post makes one claim: in `vellum` a scene is an ordinary value you construct,
+inspect, and render, not a side effect fired at a device.
+
+Start with the smallest thing that draws.
+
+```{r}
+library(vellum)
+
+vl_scene(width = 6, height = 3, bg = "white") |>
+  draw(circle_grob(x = 0.2, y = 0.5, r = 0.28,
+                   gp = vl_gpar(fill = "#f7c948", col = NA))) |>
+  draw(text_grob("vellum", x = 0.6, y = 0.5,
+                 gp = vl_gpar(fontsize = 44, col = "#1b2a4a", fontface = "bold")))
+```
+
+`vl_scene()` fixes the page: six inches by three, white background. Each `draw()`
+appends a grob, one of a couple dozen primitives such as `circle_grob()` and
+`text_grob()`. Coordinates default to `"npc"`, normalised parent coordinates,
+where `(0, 0)` is the bottom-left of the region and `(1, 1)` the top-right. A
+grob on its own draws nothing; it is a value. The scene is a value too, and
+printing it is what renders it.
+
+## Viewports, and data coordinates
+
+A flat page is not much of an engine. The tree comes from viewports: `push()`
+descends into a `vl_viewport()`, `draw()` adds a grob at the current level, and
+`pop()` climbs back up. A viewport carries its own coordinate system, so once you
+give it an `xscale` and a `yscale`, `"native"` units place raw data values
+straight onto the region.
+
+```{r}
+set.seed(1)
+x <- runif(60, 0, 10)
+y <- 1.8 * x + rnorm(60, 0, 4)
+
+vl_scene(5, 3.2, bg = "white") |>
+  push(vl_viewport(width = 0.82, height = 0.82,
+                   xscale = c(0, 10), yscale = range(pretty(y)))) |>
+  draw(rect_grob(gp = vl_gpar(fill = "#f4f6f8", col = "#cfd8dc"))) |>
+  draw(points_grob(vl_unit(x, "native"), vl_unit(y, "native"),
+                   size = vl_unit(3.2, "mm"),
+                   gp = vl_gpar(fill = "#3a7bd5", col = "#1b2a4a"))) |>
+  pop()
+```
+
+The panel rectangle is drawn in `"npc"`, so it fills its viewport at any size.
+The points sit in `"native"`, so they follow the data scales. The marker size in
+millimetres stays millimetres no matter how the panel is resized. Mixing those
+coordinate systems in one scene is the whole trick behind panels, insets, and
+eventually facets: push a region, draw in its local coordinates, pop back out.
+
+If you know `grid`, none of this is new. `vl_scene()` is `grid.newpage()`,
+`push()`/`pop()` are `pushViewport()`/`popViewport()`, and `vl_unit(1, "native")`
+is `unit(1, "native")`. What you feel immediately is that no global device or
+viewport stack is being mutated behind your back. The pipe is the tree, and the
+scene at the end is a plain R value you can assign to a variable and branch from.
+
+## One value, three formats
+
+Because the scene is a value, rendering is a separate step you call when you want
+a file. The extension picks the backend.
+
+```{r}
+#| eval: false
+s <- vl_scene(4, 3) |>
+  draw(circle_grob(r = 0.3, gp = vl_gpar(fill = "tomato", col = NA)))
+
+render(s, "out.png")   # raster
+render(s, "out.svg")   # vector
+render(s, "out.pdf")   # vector
+```
+
+Same geometry across all three, and the raster and PDF output are byte-stable, so
+a figure is reproducible and snapshot-testable. Hold onto that split between the
+scene and its rendering, because it is the hinge the whole ecosystem turns on
+later in the series.
+
+I have been saying "in Rust" and walking straight past it. The next post stops
+and asks why: what actually runs in Rust, what it buys, and what it costs.
