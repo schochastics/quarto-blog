@@ -1,0 +1,40 @@
+name: blog-publish
+
+# Daily scheduled publishing for blog.schochastics.net.
+# Posts go live automatically on the day set in their `date:` front matter;
+# anything dated in the future is held back as a draft until its day arrives.
+trigger:
+  schedule: "0 8 * * *"   # every day at 08:00 (system timezone)
+  catchup: once           # if the Mac was asleep at 08:00, run once on wake
+  overlap: skip           # never run two publishes at once
+
+steps:
+  # 1. Mark future-dated posts as draft, un-draft ones whose date has arrived.
+  - id: gate
+    script: .daggle/gate_drafts.R
+
+  # 2. Render the whole site (future posts are excluded via draft-mode: gone).
+  - id: render
+    command: quarto render
+    timeout: 30m
+    depends:
+      - gate
+
+  # 3. Deploy the built site to the server (same scp used manually).
+  - id: deploy
+    command: scp -r _site/* jpm36ob80728@schochastics.net:/home/jpm36ob80728/webseiten/blog/public/
+    retry:
+      limit: 2
+    depends:
+      - render
+
+  # 4. Commit and push the draft-flag changes so the repo stays clean.
+  - id: commit
+    command: |
+      git add posts
+      if ! git diff --cached --quiet; then
+        git commit -q -m "chore: publish scheduled posts ($(date +%F))"
+        git push -q
+      fi
+    depends:
+      - deploy

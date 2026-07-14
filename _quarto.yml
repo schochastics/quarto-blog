@@ -4,6 +4,7 @@ project:
 website:
   title: "schochastics - all things R"
   description: "A blog about RStats by David Schoch"
+  draft-mode: gone
   site-url: http://blog.schochastics.net
   repo-url: https://github.com/schochastics/quarto-blog
   open-graph: true
