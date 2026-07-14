@@ -8,6 +8,7 @@ categories:
 - R
 - data visualization
 - vellumverse
+draft: true
 ---
 
 Last time the experiment turned up something: grid's friction traces to a single

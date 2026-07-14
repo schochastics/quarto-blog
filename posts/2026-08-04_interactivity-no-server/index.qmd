@@ -8,6 +8,7 @@ categories:
 - R
 - data visualization
 - vellumverse
+draft: true
 ---
 
 Several posts back, in the retained-mode post, I asked you to hold onto one idea:

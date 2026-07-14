@@ -8,6 +8,7 @@ categories:
 - R
 - data visualization
 - vellumverse
+draft: true
 ---
 
 Thirteen posts in, here is the practical send-off. If you think in `ggplot2`, you

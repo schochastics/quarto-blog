@@ -8,6 +8,7 @@ categories:
 - R
 - performance
 - vellumverse
+draft: true
 ---
 
 Two things make plotting slow at scale: solving the layout, and drawing one

@@ -8,6 +8,7 @@ categories:
 - R
 - data visualization
 - vellumverse
+draft: true
 ---
 
 I want to be honest about where this came from, because it was not a grand plan.

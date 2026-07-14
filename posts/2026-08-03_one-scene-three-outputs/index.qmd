@@ -8,6 +8,7 @@ categories:
 - R
 - data visualization
 - vellumverse
+draft: true
 ---
 
 This is the post the whole series has been walking toward. Everything so far, the

@@ -8,6 +8,7 @@ categories:
 - R
 - data visualization
 - vellumverse
+draft: true
 ---
 
 [Two posts back](https://blog.schochastics.net/posts/2026-07-17_two-graphics-systems/index.html) I described the experiment this all started as. [In the last post](https://blog.schochastics.net/posts/2026-07-20_inside-a-graphics-engine/index.html), I

@@ -8,6 +8,7 @@ categories:
 - R
 - data visualization
 - vellumverse
+draft: true
 ---
 
 Last post ended on a question: if a scene is a tree you can read back, what do

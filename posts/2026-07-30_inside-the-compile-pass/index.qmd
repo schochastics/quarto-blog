@@ -8,6 +8,7 @@ categories:
 - R
 - data visualization
 - vellumverse
+draft: true
 ---
 
 Last post I said `vellumplot` builds a spec and a compiler turns it into a scene.
