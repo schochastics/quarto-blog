@@ -10,18 +10,19 @@ categories:
 - vellumverse
 ---
 
-I want to be honest about where this came from, because it was not a grand plan.
+This is the first post in a series about [`vellum`](https://github.com/r-vellum/), a graphics engine written in Rust and called from R. The series is about the design decisions that went into it, the trade-offs made, and the lessons learned along the way. It is not a tutorial, and it is not a pitch for `vellum`. It is a story about what happens when you start with a question and follow it to its conclusion.
+
+## The Beginning
+
 I had been writing more Rust and calling it from R for the odd
 performance-critical piece, or just for fun. One day, while I was [refactoring the plotting code of igraph](https://github.com/igraph/rigraph/pull/2711), I was wondering how difficult it would be to write a graphics engine in Rust and call it from R. I had no idea, but I was curious.  
 
 What I had in mind was not a plotting package but the layer underneath one, the
-part that turns primitives and coordinates into pixels. I did not know whether it was feasible, let alone whether it would be any
-good or fix anything. I just wanted to see.
+part that turns primitives and coordinates into pixels. I did not know whether it was feasible, let alone whether it would be any good or fix anything.
 
-This series is what came out of that. The experiment went well enough that I kept
-pulling the thread, and `vellum` is where it ended up. Before I show you any of
-it, though, this first post is about what I was poking at, because you cannot
-judge an experiment without knowing what it was measured against.
+The experiment went well enough that I kept
+pulling the thread, and `vellum` (together with the whole `vellumverse`) is where it ended up. Before I show you any of
+it, though, this first post is about what I was poking at.
 
 R already has two graphics systems. Base graphics draws straight to a device:
 every call paints immediately and nothing is kept. `grid`, written by Paul
