@@ -14,7 +14,7 @@ Last time the experiment turned up something: grid's friction traces to a single
 architectural decision, not to anything you are doing wrong. Before I can show you
 a different architecture, we need shared words for the pieces. Every graphics engine, whether it is base R, `grid`, the
 browser's canvas, or the `vellum` I am building toward, is made of the same
-handful of parts. Name them once and the rest of this series gets much shorter.
+handful of parts. 
 
 A drawing *primitive* is the smallest thing you can put on a page: a line, a
 rectangle, a circle, a run of text, a filled polygon. Everything you have ever
