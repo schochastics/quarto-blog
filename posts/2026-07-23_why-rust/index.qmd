@@ -11,7 +11,7 @@ categories:
 draft: true
 ---
 
-I have said "with a Rust backend" a few times now without earning it. This post
+I have said "with a Rust backend" a few times now without providing more context. This post
 is the why, and it matters because "a grid-like framework with a Rust backend"
 can mean two very different things. The difference is the whole design.
 
@@ -19,14 +19,14 @@ The modest version is to be a graphics *device*. You let R's engine and `grid`
 stay in charge of the scene, the units, and the layout, and have Rust only
 rasterise the primitives handed down at the end. This is low risk, and you
 inherit the ecosystem for free, since everything already renders through devices.
-It also fixes none of the problems from the first post, because `grid` is still
+However, It also fixes none of the problems from the first post, because `grid` is still
 doing the layout and the late binding upstream. The `ragg` device is roughly
 this, and it is very good at being it.
 
 The ambitious version is to reimplement the model itself. You put the scene
 graph, unit resolution, layout, and rendering in Rust, and give R a thin
 declarative API that only describes what to draw. `vellum` takes this path. Look
-inside the crate and the files line up with the seven parts from two posts back:
+inside the crate and the files roughly line up with the seven parts from two posts back:
 `scene.rs`, `units.rs`, `render.rs`, `font.rs`, and an `aggregate.rs` for the
 datashading path.
 
