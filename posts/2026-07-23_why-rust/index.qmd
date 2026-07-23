@@ -8,7 +8,6 @@ categories:
 - R
 - rust
 - vellumverse
-draft: true
 ---
 
 I have said "with a Rust backend" a few times now without providing more context. This post
